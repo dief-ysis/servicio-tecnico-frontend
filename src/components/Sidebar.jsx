@@ -1,21 +1,57 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 const links = [
-  { to: '/',         label: 'DASHBOARD'  },
-  { to: '/equipos',  label: 'EQUIPOS'    },
-  { to: '/clientes', label: 'CLIENTES'   },
-  { to: '/usuarios', label: 'USUARIOS'   },
+  { to: '/',         label: 'Dashboard',  icon: '▦' },
+  { to: '/equipos',  label: 'Equipos',    icon: '⊞' },
+  { to: '/clientes', label: 'Clientes',   icon: '◉' },
+  { to: '/usuarios', label: 'Usuarios',   icon: '◈' },
 ]
 
 export default function Sidebar() {
   const { usuario, logout } = useAuth()
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
 
   const handleLogout = () => { logout(); navigate('/login') }
 
   const initials = usuario?.nombre
     ?.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
+
+  if (isMobile) {
+    return (
+      <nav style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        background: '#000', borderTop: '1px solid #1f1f1f',
+        display: 'flex', zIndex: 200, height: 58
+      }}>
+        {links.map(({ to, label, icon }) => (
+          <NavLink key={to} to={to} end={to === '/'} style={({ isActive }) => ({
+            flex: 1, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: 3,
+            color: isActive ? '#ffcd0d' : '#555',
+            fontSize: 9, fontWeight: 800, letterSpacing: '0.06em',
+            textDecoration: 'none', padding: '6px 0',
+            borderTop: isActive ? '2px solid #ffcd0d' : '2px solid transparent',
+          })}>
+            <span style={{ fontSize: 16 }}>{icon}</span>
+            {label.toUpperCase()}
+          </NavLink>
+        ))}
+        <button onClick={handleLogout} style={{
+          flex: 0.6, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', gap: 3,
+          background: 'none', border: 'none', borderTop: '2px solid transparent',
+          color: '#555', fontSize: 9, fontWeight: 800, letterSpacing: '0.06em',
+          cursor: 'pointer'
+        }}>
+          <span style={{ fontSize: 16 }}>×</span>
+          SALIR
+        </button>
+      </nav>
+    )
+  }
 
   return (
     <aside style={{
@@ -24,6 +60,7 @@ export default function Sidebar() {
       position: 'fixed', left: 0, top: 0, zIndex: 100
     }}>
       <div style={{ padding: '22px 18px 18px', borderBottom: '1px solid #1f1f1f' }}>
+        {/* Logo — reemplaza el div de abajo con <img> cuando tengas el archivo */}
         <div style={{
           background: '#ffcd0d', color: '#000', fontSize: 10,
           fontWeight: 900, padding: '5px 10px', borderRadius: 3,
@@ -45,9 +82,9 @@ export default function Sidebar() {
             color: isActive ? '#000' : '#555',
             background: isActive ? '#ffcd0d' : 'transparent',
             marginBottom: 2, transition: 'all 0.1s',
-            borderLeft: isActive ? 'none' : '2px solid transparent',
+            textDecoration: 'none'
           })}>
-            {label}
+            {label.toUpperCase()}
           </NavLink>
         ))}
       </nav>

@@ -37,3 +37,24 @@ body {
 button { cursor: pointer; font-family: inherit; }
 input, select, textarea { font-family: inherit; }
 a { text-decoration: none; color: inherit; }
+
+.tabla-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tabla-scroll table {
+  min-width: 600px;
+}
+
+@media (max-width: 768px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .filtros-grid {
+    flex-direction: column !important;
+  }
+  .detalle-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

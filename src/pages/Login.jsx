@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import * as authApi from '../api/auth'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -10,6 +11,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -29,58 +31,79 @@ export default function Login() {
   return (
     <div style={{
       minHeight: '100vh', background: '#000',
-      display: 'flex', alignItems: 'center', justifyContent: 'center'
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      padding: '20px 16px'
     }}>
+      {/* Logo */}
+      <div style={{ marginBottom: 32, textAlign: 'center' }}>
+        <img
+          src="/logo.png"
+          alt="Light Solution"
+          style={{ height: isMobile ? 48 : 56, objectFit: 'contain' }}
+          onError={e => { e.target.style.display = 'none' }}
+        />
+        <div style={{
+          background: '#ffcd0d', color: '#000', fontSize: 10,
+          fontWeight: 900, padding: '5px 12px', borderRadius: 3,
+          display: 'none', letterSpacing: '0.1em'
+        }} id="logo-fallback">
+          LIGHT SOLUTION
+        </div>
+      </div>
+
       <div style={{
         background: '#111', border: '0.5px solid #2a2a2a',
-        borderRadius: 12, padding: '40px 36px', width: '100%', maxWidth: 380
+        borderRadius: 10, padding: isMobile ? '28px 20px' : '40px 36px',
+        width: '100%', maxWidth: 380
       }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{
-            background: '#ffcd0d', color: '#000', fontSize: 13,
-            fontWeight: 800, padding: '6px 14px', borderRadius: 6,
-            display: 'inline-block', letterSpacing: '0.06em', marginBottom: 10
-          }}>
-            LIGHT SOLUTION
-          </div>
-          <div style={{ color: '#888', fontSize: 13 }}>Servicio Técnico</div>
+        <div style={{
+          fontSize: 10, color: '#555', textAlign: 'center',
+          textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 28
+        }}>
+          Servicio Técnico — Acceso interno
         </div>
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 16 }}>
-            <label style={{ color: '#888', fontSize: 12, display: 'block', marginBottom: 6 }}>
-              Email
-            </label>
+            <label style={{
+              color: '#666', fontSize: 10, display: 'block',
+              marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800
+            }}>Email</label>
             <input
-              type="email" value={email} onChange={e => setEmail(e.target.value)}
+              type="email" value={email}
+              onChange={e => setEmail(e.target.value)}
               required autoFocus
               style={{
-                width: '100%', background: '#1a1a1a', border: '0.5px solid #333',
-                borderRadius: 6, padding: '10px 12px', color: '#fff', fontSize: 14,
-                outline: 'none'
+                width: '100%', background: '#1a1a1a',
+                border: '1px solid #333', borderRadius: 4,
+                padding: '11px 12px', color: '#fff', fontSize: 14, outline: 'none'
               }}
             />
           </div>
 
           <div style={{ marginBottom: 24 }}>
-            <label style={{ color: '#888', fontSize: 12, display: 'block', marginBottom: 6 }}>
-              Contraseña
-            </label>
+            <label style={{
+              color: '#666', fontSize: 10, display: 'block',
+              marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800
+            }}>Contraseña</label>
             <input
-              type="password" value={password} onChange={e => setPassword(e.target.value)}
+              type="password" value={password}
+              onChange={e => setPassword(e.target.value)}
               required
               style={{
-                width: '100%', background: '#1a1a1a', border: '0.5px solid #333',
-                borderRadius: 6, padding: '10px 12px', color: '#fff', fontSize: 14,
-                outline: 'none'
+                width: '100%', background: '#1a1a1a',
+                border: '1px solid #333', borderRadius: 4,
+                padding: '11px 12px', color: '#fff', fontSize: 14, outline: 'none'
               }}
             />
           </div>
 
           {error && (
             <div style={{
-              background: '#fce8e8', color: '#8a0000', fontSize: 13,
-              padding: '10px 12px', borderRadius: 6, marginBottom: 16
+              background: '#fce8e8', color: '#8a0000', fontSize: 12,
+              padding: '10px 12px', borderRadius: 4, marginBottom: 16,
+              fontWeight: 600
             }}>
               {error}
             </div>

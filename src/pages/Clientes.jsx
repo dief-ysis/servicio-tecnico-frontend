@@ -48,8 +48,9 @@ export default function Clientes() {
         style={{ ...inputStyle, maxWidth: 320, marginBottom: 18 }}
       />
 
-      <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: 10, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <div className="tabla-scroll">
+        <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: 10, overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: '#fafafa' }}>
               {['Nombre', 'Teléfono', 'Email', 'Registrado', ''].map(h => (
@@ -95,7 +96,8 @@ export default function Clientes() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
 
       {showModal && (

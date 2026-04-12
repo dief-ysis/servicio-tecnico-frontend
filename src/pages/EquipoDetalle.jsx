@@ -104,7 +104,7 @@ export default function EquipoDetalle() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+      <div className="detalle-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
         <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: 10, padding: '18px 20px' }}>
           <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 14 }}>Datos del cliente</div>
           <div style={{ fontSize: 13, marginBottom: 6 }}><span style={{ color: '#888' }}>Nombre: </span>{equipo.cliente_nombre}</div>

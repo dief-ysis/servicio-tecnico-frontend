@@ -45,7 +45,7 @@ export default function Dashboard() {
       </h1>
 
       {loading ? <SkeletonCard /> : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 28 }}>
+        <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 28 }}>
           {statConfig.map(({ key, label, color, bg }) => (
             <div key={key} style={{
               background: '#fff', border: '1px solid #e8e8e8',
@@ -60,11 +60,12 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div style={{
-        background: '#fff', border: '0.5px solid #e8e8e8',
-        borderRadius: 10, overflow: 'hidden'
-      }}>
+      <div className="tabla-scroll">
         <div style={{
+          background: '#fff', border: '0.5px solid #e8e8e8',
+          borderRadius: 10, overflow: 'hidden'
+        }}>
+          <div style={{
           padding: '14px 20px', borderBottom: '1px solid #eee',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           background: '#fafafa'
@@ -127,6 +128,7 @@ export default function Dashboard() {
             ))}
           </tbody>
         </table>
+      </div>
       </div>
 
       {listos.length > 0 && (

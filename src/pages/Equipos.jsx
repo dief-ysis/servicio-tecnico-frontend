@@ -67,7 +67,7 @@ export default function Equipos() {
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: 10, marginBottom: 18, flexWrap: 'wrap', alignItems: 'center' }}>
+      <div className="filtros-grid" style={{ display: 'flex', gap: 10, marginBottom: 18, flexWrap: 'wrap' }}>
         <input
           placeholder="Buscar por cliente, N° ingreso o marca..."
           value={buscar} onChange={e => setBuscar(e.target.value)}
@@ -117,8 +117,9 @@ export default function Equipos() {
         )}
       </div>
 
-      <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: 10, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <div className="tabla-scroll">
+        <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: 10, overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: '#fafafa' }}>
               {['N° Ingreso', 'Cliente', 'Equipo', 'Falla', 'Estado', 'Ingreso', ''].map(h => (
