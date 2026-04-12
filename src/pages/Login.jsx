@@ -35,18 +35,17 @@ export default function Login() {
       alignItems: 'center', justifyContent: 'center',
       padding: '20px 16px'
     }}>
-      {/* Logo en login */}
-      <div style={{
-        background: '#fff', borderRadius: 6,
-        padding: '12px 24px', marginBottom: 32,
-        display: 'inline-block'
-      }}>
-        <img
-          src="/logo.png"
-          alt="Light Solution"
-          style={{ height: 48, objectFit: 'contain', display: 'block' }}
-          onError={e => { e.target.style.display = 'none' }}
-        />
+      <div style={{ marginBottom: 32, textAlign: 'center' }}>
+        <div style={{
+          background: '#fff', borderRadius: 6,
+          padding: '10px 24px', display: 'inline-block'
+        }}>
+          <img
+            src="/logo.png"
+            alt="Light Solution"
+            style={{ height: isMobile ? 44 : 52, objectFit: 'contain', display: 'block' }}
+          />
+        </div>
       </div>
 
       <div style={{

@@ -60,28 +60,18 @@ export default function Sidebar() {
       position: 'fixed', left: 0, top: 0, zIndex: 100
     }}>
       <div style={{ padding: '18px 16px 14px', borderBottom: '1px solid #1f1f1f' }}>
-        {/* Logo en sidebar */}
-        <div style={{ width: 36, height: 36, overflow: 'hidden', borderRadius: '50%' }}>
+        <div style={{
+          background: '#fff', borderRadius: 5,
+          padding: '6px 10px', display: 'inline-block', marginBottom: 6
+        }}>
           <img
             src="/logo.png"
             alt="Light Solution"
-            style={{
-              height: 36,
-              width: 'auto',
-              objectFit: 'cover',
-              objectPosition: 'center',
-              marginLeft: -8
-            }}
+            style={{ height: 28, objectFit: 'contain', display: 'block' }}
           />
         </div>
         <div style={{
-          color: '#fff', fontSize: 11, fontWeight: 900,
-          marginTop: 8, letterSpacing: '0.06em'
-        }}>
-          LIGHT SOLUTION
-        </div>
-        <div style={{
-          color: '#555', fontSize: 9, marginTop: 3,
+          color: '#555', fontSize: 9, marginTop: 4,
           letterSpacing: '0.08em', textTransform: 'uppercase'
         }}>
           Servicio Técnico
