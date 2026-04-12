@@ -35,21 +35,18 @@ export default function Login() {
       alignItems: 'center', justifyContent: 'center',
       padding: '20px 16px'
     }}>
-      {/* Logo */}
-      <div style={{ marginBottom: 32, textAlign: 'center' }}>
+      {/* Logo en login */}
+      <div style={{
+        background: '#fff', borderRadius: 6,
+        padding: '12px 24px', marginBottom: 32,
+        display: 'inline-block'
+      }}>
         <img
           src="/logo.png"
           alt="Light Solution"
-          style={{ height: isMobile ? 48 : 56, objectFit: 'contain' }}
+          style={{ height: 48, objectFit: 'contain', display: 'block' }}
           onError={e => { e.target.style.display = 'none' }}
         />
-        <div style={{
-          background: '#ffcd0d', color: '#000', fontSize: 10,
-          fontWeight: 900, padding: '5px 12px', borderRadius: 3,
-          display: 'none', letterSpacing: '0.1em'
-        }} id="logo-fallback">
-          LIGHT SOLUTION
-        </div>
       </div>
 
       <div style={{
