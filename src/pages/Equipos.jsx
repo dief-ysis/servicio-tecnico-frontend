@@ -177,6 +177,7 @@ export default function Equipos() {
           </tbody>
         </table>
       </div>
+    </div>
 
       {showModal && (
         <ModalNuevoEquipo
