@@ -24,6 +24,8 @@ export default function Equipos() {
   const [loading, setLoading] = useState(true)
   const [filtroEstado, setFiltroEstado] = useState('')
   const [buscar, setBuscar] = useState('')
+  const [fechaDesde, setFechaDesde] = useState('')
+  const [fechaHasta, setFechaHasta] = useState('')
   const [showModal, setShowModal] = useState(false)
   const navigate = useNavigate()
   
@@ -31,6 +33,8 @@ export default function Equipos() {
     const params = {}
     if (filtroEstado) params.estado = filtroEstado
     if (buscar) params.buscar = buscar
+    if (fechaDesde) params.fecha_desde = fechaDesde
+    if (fechaHasta) params.fecha_hasta = fechaHasta
     setLoading(true)
     try {
       const r = await getEquipos(params)
@@ -40,7 +44,7 @@ export default function Equipos() {
     } finally {
       setLoading(false)
     }
-  }, [filtroEstado, buscar, toast])
+  }, [filtroEstado, buscar, fechaDesde, fechaHasta, toast])
 
   useEffect(() => {
     const load = async () => { await cargar() }
@@ -63,7 +67,7 @@ export default function Equipos() {
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
+      <div style={{ display: 'flex', gap: 10, marginBottom: 18, flexWrap: 'wrap', alignItems: 'center' }}>
         <input
           placeholder="Buscar por cliente, N° ingreso o marca..."
           value={buscar} onChange={e => setBuscar(e.target.value)}
@@ -75,6 +79,42 @@ export default function Equipos() {
             <option key={e} value={e}>{ESTADOS_LABELS[e]}</option>
           ))}
         </select>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{
+            fontSize: 10, fontWeight: 800, color: '#999',
+            textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap'
+          }}>Desde</span>
+          <input
+            type="date"
+            value={fechaDesde}
+            onChange={e => setFechaDesde(e.target.value)}
+            style={{ ...inputStyle, width: 140 }}
+          />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{
+            fontSize: 10, fontWeight: 800, color: '#999',
+            textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap'
+          }}>Hasta</span>
+          <input
+            type="date"
+            value={fechaHasta}
+            onChange={e => setFechaHasta(e.target.value)}
+            style={{ ...inputStyle, width: 140 }}
+          />
+        </div>
+        {(fechaDesde || fechaHasta) && (
+          <button
+            onClick={() => { setFechaDesde(''); setFechaHasta('') }}
+            style={{
+              background: 'none', border: '1px solid #ddd', borderRadius: 4,
+              padding: '8px 12px', fontSize: 10, fontWeight: 800,
+              color: '#999', cursor: 'pointer', letterSpacing: '0.06em',
+              textTransform: 'uppercase', whiteSpace: 'nowrap'
+            }}>
+            Limpiar fechas
+          </button>
+        )}
       </div>
 
       <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: 10, overflow: 'hidden' }}>
