@@ -4,6 +4,7 @@ import { getEquipos } from '../api/equipos'
 import EstadoBadge from '../components/EstadoBadge'
 import { SkeletonCard, SkeletonTable } from '../components/Skeleton'
 import { pageTitle, btnPrimary, card, thStyle, tdStyle } from '../components/UI'
+import { getSinMovimiento } from '../api/equipos'
 
 const estados = ['por_reparar', 'en_reparacion', 'reparado', 'irreparable', 'entregado']
 
@@ -17,10 +18,12 @@ const statConfig = [
 export default function Dashboard() {
   const [equipos, setEquipos] = useState([])
   const [loading, setLoading] = useState(true)
+  const [sinMovimiento, setSinMovimiento] = useState([])
   const navigate = useNavigate()
 
   useEffect(() => {
     getEquipos().then(r => setEquipos(r.data)).finally(() => setLoading(false))
+    getSinMovimiento(7).then(r => setSinMovimiento(r.data))
   }, [])
 
   const conteo = estados.reduce((acc, e) => {
@@ -130,6 +133,67 @@ export default function Dashboard() {
         </table>
       </div>
       </div>
+
+      {sinMovimiento.length > 0 && (
+        <div style={{
+          background: '#fff', border: '1px solid #e8e8e8',
+          borderRadius: 8, overflow: 'hidden', marginTop: 16
+        }}>
+          <div style={{
+            padding: '14px 20px', borderBottom: '1px solid #eee',
+            background: '#fce8e8', display: 'flex',
+            justifyContent: 'space-between', alignItems: 'center'
+          }}>
+            <span style={{
+              fontWeight: 900, fontSize: 11, textTransform: 'uppercase',
+              letterSpacing: '0.08em', color: '#8a0000'
+            }}>
+              Sin movimiento +7 días — {sinMovimiento.length}
+            </span>
+          </div>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: '#fafafa' }}>
+                {['N° Ingreso', 'Cliente', 'Equipo', 'Estado', 'Último cambio'].map(h => (
+                  <th key={h} style={{
+                    padding: '9px 16px', textAlign: 'left', fontSize: 10,
+                    color: '#999', fontWeight: 800, borderBottom: '1px solid #eee',
+                    letterSpacing: '0.1em', textTransform: 'uppercase'
+                  }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {sinMovimiento.map(eq => (
+                <tr key={eq.id}
+                  onClick={() => navigate(`/equipos/${eq.id}`)}
+                  style={{ cursor: 'pointer' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#fafafa'}
+                  onMouseLeave={e => e.currentTarget.style.background = ''}
+                >
+                  <td style={{ padding: '11px 16px', fontFamily: 'monospace', fontSize: 12, color: '#334862', borderBottom: '1px solid #f5f5f5' }}>
+                    {eq.numero_ingreso}
+                  </td>
+                  <td style={{ padding: '11px 16px', fontSize: 13, borderBottom: '1px solid #f5f5f5' }}>
+                    {eq.cliente_nombre}
+                  </td>
+                  <td style={{ padding: '11px 16px', fontSize: 13, borderBottom: '1px solid #f5f5f5' }}>
+                    {eq.marca} {eq.tipo_equipo}
+                  </td>
+                  <td style={{ padding: '11px 16px', borderBottom: '1px solid #f5f5f5' }}>
+                    <EstadoBadge estado={eq.estado_actual} />
+                  </td>
+                  <td style={{ padding: '11px 16px', fontSize: 12, color: '#8a0000', fontWeight: 700, borderBottom: '1px solid #f5f5f5' }}>
+                    {eq.ultimo_cambio
+                      ? new Date(eq.ultimo_cambio).toLocaleDateString('es-CL')
+                      : 'Sin registro'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {listos.length > 0 && (
         <div style={{

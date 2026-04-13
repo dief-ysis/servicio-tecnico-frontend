@@ -4,6 +4,7 @@ import { getEquipo, cambiarEstado, getHistorial, actualizarEquipo } from '../api
 import EstadoBadge from '../components/EstadoBadge'
 import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../components/Toast'
+import { subirFoto } from '../api/equipos'
 
 const ESTADOS = ['por_reparar', 'en_reparacion', 'reparado', 'irreparable', 'entregado']
 const inputStyle = {
@@ -23,6 +24,7 @@ export default function EquipoDetalle() {
   const [editando, setEditando] = useState(false)
   const [form, setForm] = useState({})
   const [guardando, setGuardando] = useState(false)
+  const [subiendo, setSubiendo] = useState(false)
 
   const cargar = () => {
     Promise.all([getEquipo(id), getHistorial(id)]).then(([eq, hist]) => {
@@ -64,6 +66,21 @@ export default function EquipoDetalle() {
     setEditando(false)
     setGuardando(false)
     cargar()
+  }
+
+  const handleFoto = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    setSubiendo(true)
+    try {
+      const res = await subirFoto(id, file)
+      toast('Foto subida correctamente')
+      cargar()
+    } catch {
+      toast('Error al subir la foto', 'error')
+    } finally {
+      setSubiendo(false)
+    }
   }
 
   const formatFecha = (iso) => iso ? new Date(iso).toLocaleString('es-CL', {
@@ -201,6 +218,37 @@ export default function EquipoDetalle() {
             <div style={{ fontSize: 13, color: '#444', padding: '8px 0' }}>{equipo.observaciones ?? '—'}</div>
           )}
         </div>
+      </div>
+
+      <div style={{ marginTop: 14, borderTop: '1px solid #f0f0f0', paddingTop: 14 }}>
+        {equipo.foto_url ? (
+          <div>
+            <div style={{ fontSize: 11, color: '#999', fontWeight: 700,
+              textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+              Foto del equipo
+            </div>
+            <img
+              src={equipo.foto_url}
+              alt="Foto del equipo"
+              style={{ width: '100%', borderRadius: 6, border: '1px solid #e8e8e8', cursor: 'pointer' }}
+              onClick={() => window.open(equipo.foto_url, '_blank')}
+            />
+          </div>
+        ) : (
+          <label style={{ cursor: 'pointer' }}>
+            <div style={{
+              border: '1px dashed #ddd', borderRadius: 6, padding: '20px',
+              textAlign: 'center', color: '#999', fontSize: 12
+            }}>
+              {subiendo ? 'Subiendo...' : '+ Agregar foto del equipo'}
+            </div>
+            <input
+              type="file" accept="image/*" capture="environment"
+              onChange={handleFoto} style={{ display: 'none' }}
+              disabled={subiendo}
+            />
+          </label>
+        )}
       </div>
 
       {usuario.rol === 'tecnico' && (

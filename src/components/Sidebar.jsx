@@ -3,10 +3,11 @@ import { useAuth } from '../hooks/useAuth'
 import { useIsMobile } from '../hooks/useIsMobile'
 
 const links = [
-  { to: '/',         label: 'Dashboard',  icon: '▦' },
-  { to: '/equipos',  label: 'Equipos',    icon: '⊞' },
-  { to: '/clientes', label: 'Clientes',   icon: '◉' },
-  { to: '/usuarios', label: 'Usuarios',   icon: '◈' },
+  { to: '/',         label: 'DASHBOARD',  icon: '▦' },
+  { to: '/equipos',  label: 'EQUIPOS',    icon: '⊞' },
+  { to: '/clientes', label: 'CLIENTES',   icon: '◉' },
+  { to: '/estadisticas', label: 'ESTADÍSTICAS', icon: '◉' },
+  { to: '/usuarios', label: 'USUARIOS',   icon: '◈' },
 ]
 
 export default function Sidebar() {

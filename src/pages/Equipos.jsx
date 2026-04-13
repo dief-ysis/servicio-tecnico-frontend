@@ -5,6 +5,7 @@ import { getClientes, crearCliente } from '../api/clientes'
 import EstadoBadge from '../components/EstadoBadge'
 import { SkeletonTable } from '../components/Skeleton'
 import { useToast } from '../components/Toast'
+import { exportarEquipos } from '../utils/exportExcel'
 
 const ESTADOS = ['', 'por_reparar', 'en_reparacion', 'reparado', 'irreparable', 'entregado']
 const ESTADOS_LABELS = {
@@ -57,11 +58,19 @@ export default function Equipos() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: '#111' }}>Equipos</h1>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button onClick={() => exportarEquipos(equipos)} style={{
+          background: '#fff', border: '1px solid #e0e0e0', borderRadius: 4,
+          padding: '9px 16px', fontSize: 11, fontWeight: 800,
+          letterSpacing: '0.06em', cursor: 'pointer', color: '#333',
+          textTransform: 'uppercase'
+        }}>
+          Exportar Excel
+        </button>
         <button onClick={() => setShowModal(true)} style={{
-          background: '#ffcd0d', border: 'none', borderRadius: 6,
-          padding: '9px 18px', fontSize: 13, fontWeight: 700, cursor: 'pointer'
+          background: '#ffcd0d', border: 'none', borderRadius: 4,
+          padding: '9px 18px', fontSize: 11, fontWeight: 900,
+          letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer'
         }}>
           + Nuevo ingreso
         </button>
