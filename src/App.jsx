@@ -11,6 +11,7 @@ import Usuarios from './pages/Usuarios'
 import { ToastProvider } from './components/Toast'
 import OrdenTrabajo from './pages/OrdenTrabajo'
 import NotFound from './pages/NotFound'
+import Privacidad from './pages/Privacidad'
 
 function PrivateRoute({ children }) {
   const { usuario } = useAuth()
@@ -41,6 +42,7 @@ function AppRoutes() {
         <PrivateRoute><OrdenTrabajo /></PrivateRoute>
       }/>
       <Route path="*" element={<NotFound />} />
+      <Route path="/privacidad" element={<Privacidad />} />
     </Routes>
     
   )

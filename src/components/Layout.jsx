@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import BuscadorGlobal from './BuscadorGlobal'
 import { useIsMobile } from '../hooks/useIsMobile'
@@ -10,7 +11,11 @@ export default function Layout({ children }) {
       {!isMobile && <Sidebar />}
       <div style={{
         marginLeft: isMobile ? 0 : 220,
-        flex: 1, minHeight: '100vh', background: '#fff'
+        flex: 1,
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        background: '#fff'
       }}>
         <header style={{
           height: 52, background: '#000', borderBottom: '1px solid #1f1f1f',
@@ -31,10 +36,25 @@ export default function Layout({ children }) {
           <BuscadorGlobal />
         </header>
         <main style={{
-          padding: isMobile ? '20px 16px 76px' : '32px 36px'
+          flex: 1,
+          padding: isMobile ? '20px 16px 16px' : '32px 36px'
         }}>
           {children}
         </main>
+        <footer style={{
+          textAlign: 'center',
+          marginTop: 16,
+          padding: isMobile ? '0 16px 16px' : '0 36px 24px'
+        }}>
+          <Link to="/privacidad" style={{
+            fontSize: 10,
+            color: '#555',
+            textDecoration: 'none',
+            letterSpacing: '0.06em'
+          }}>
+            Política de privacidad · Ley 19.628
+          </Link>
+        </footer>
       </div>
       {isMobile && <Sidebar />}
     </div>
