@@ -6,7 +6,7 @@ import { SkeletonCard, SkeletonTable } from '../components/Skeleton'
 import { pageTitle, btnPrimary, card, thStyle, tdStyle } from '../components/UI'
 import { getSinMovimiento } from '../api/equipos'
 
-const estados = ['por_reparar', 'en_reparacion', 'reparado', 'irreparable', 'entregado']
+const estados = ['por_reparar', 'en_reparacion', 'espera_repuesto', 'reparado', 'irreparable', 'entregado']
 
 const statConfig = [
   { key: 'por_reparar',     label: 'Por reparar',     color: '#8a6500', bg: '#fff8d6' },
