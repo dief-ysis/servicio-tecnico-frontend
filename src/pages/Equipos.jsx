@@ -283,7 +283,7 @@ export default function Equipos() {
 
 function ModalNuevoEquipo({ onClose, onCreado }) {
   const toast = useToast()
-  const isMobile = useIsMobile()
+  const { isMobile } = useIsMobile()
   const [step, setStep] = useState(1)
   const [clientes, setClientes] = useState([])
   const [buscarCliente, setBuscarCliente] = useState('')
@@ -353,7 +353,7 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
 
   return (
     <div style={overlayStyle} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{modalStyle, color: 'var(--text-1)'}}>
+      <div style={{ ...modalStyle, color: 'var(--text-1)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <h2 style={{ fontSize: 16, fontWeight: 800 }}>
             {step === 1 ? 'Paso 1 — Cliente' : 'Paso 2 — Equipo'}

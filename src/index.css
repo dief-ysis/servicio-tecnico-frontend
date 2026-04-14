@@ -84,3 +84,22 @@ a { text-decoration: none; color: inherit; }
   .filtros-grid { flex-direction: column !important; }
   .detalle-grid { grid-template-columns: 1fr !important; }
 }
+
+input, select, textarea {
+  color: var(--text-1) !important;
+  background: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+}
+
+input::placeholder {
+  color: var(--text-3) !important;
+  opacity: 1;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: var(--date-icon-filter, none);
+}
+
+html.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
