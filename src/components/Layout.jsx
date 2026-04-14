@@ -17,7 +17,7 @@ export default function Layout({ children }) {
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        background: '#fff'
+        background: 'var(--bg-main)'
       }}>
         <header style={{
           height: 52, background: '#000', borderBottom: '1px solid #1f1f1f',
@@ -47,7 +47,9 @@ export default function Layout({ children }) {
         </header>
         <main style={{
           flex: 1,
-          padding: isMobile ? '20px 16px 16px' : '32px 36px'
+          padding: isMobile ? '20px 16px 76px' : '32px 36px',
+          background: 'var(--bg-main)',
+          minHeight: 'calc(100vh - 52px)'
         }}>
           {children}
         </main>
