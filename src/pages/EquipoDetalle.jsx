@@ -385,7 +385,9 @@ export default function EquipoDetalle() {
           <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>
             Sin historial
           </div>
-        ) : historial.map(h => (
+        ) : historial
+          .filter(h => h.valor_nuevo !== null && h.valor_nuevo !== '')
+          .map(h => (
           <div key={h.id} style={{
             padding: '11px 20px',
             borderBottom: '1px solid var(--border-color)',
