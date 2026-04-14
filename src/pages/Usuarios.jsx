@@ -132,6 +132,7 @@ export default function Usuarios() {
 }
 
 function ModalUsuario({ usuario, onClose, onGuardado }) {
+  const isMobile = useIsMobile()
   const [form, setForm] = useState({
     nombre: usuario?.nombre ?? '',
     email: usuario?.email ?? '',
@@ -166,10 +167,20 @@ function ModalUsuario({ usuario, onClose, onGuardado }) {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999
+      position: 'fixed', inset: 0,
+      background: isMobile ? 'var(--bg-main)' : 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: isMobile ? 'flex-start' : 'center',
+      justifyContent: 'center',
+      zIndex: 999,
+      overflowY: isMobile ? 'auto' : 'hidden'
     }} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ background: 'var(--bg-card)', borderRadius: 12, width: '100%', maxWidth: 420, padding: '28px 28px 24px' }}>
+      <div style={{
+        background: 'var(--bg-card)', borderRadius: isMobile ? 0 : 12, width: '100%',
+        maxWidth: isMobile ? '100%' : 420, height: isMobile ? '100%' : 'auto',
+        maxHeight: isMobile ? '100%' : '90vh', padding: isMobile ? '24px 20px' : '28px 28px 24px',
+        margin: isMobile ? 0 : 'auto', overflow: 'auto'
+      }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <h2 style={{ fontSize: 16, fontWeight: 800 }}>
             {usuario ? 'Editar usuario' : 'Nuevo usuario'}
@@ -254,10 +265,20 @@ function ModalPassword({ usuarioId, onClose }) {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999
+      position: 'fixed', inset: 0,
+      background: isMobile ? 'var(--bg-main)' : 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: isMobile ? 'flex-start' : 'center',
+      justifyContent: 'center',
+      zIndex: 999,
+      overflowY: isMobile ? 'auto' : 'hidden'
     }} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ background: 'var(--bg-card)', borderRadius: 12, width: '100%', maxWidth: 380, padding: '28px 28px 24px' }}>
+      <div style={{
+        background: 'var(--bg-card)', borderRadius: isMobile ? 0 : 12, width: '100%',
+        maxWidth: isMobile ? '100%' : 380, height: isMobile ? '100%' : 'auto',
+        maxHeight: isMobile ? '100%' : '90vh', padding: isMobile ? '24px 20px' : '28px 28px 24px',
+        margin: isMobile ? 0 : 'auto', overflow: 'auto'
+      }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <h2 style={{ fontSize: 16, fontWeight: 800 }}>Cambiar contraseña</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--text-3)' }}>×</button>

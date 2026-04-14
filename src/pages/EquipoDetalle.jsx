@@ -6,7 +6,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../components/Toast'
 import { subirFoto } from '../api/equipos'
 
-const ESTADOS = ['por_reparar', 'en_reparacion', 'reparado', 'irreparable', 'entregado']
+const ESTADOS = ['por_reparar', 'en_reparacion', 'espera_repuesto', 'reparado', 'irreparable', 'entregado']
 const inputStyle = {
   width: '100%', border: '0.5px solid var(--input-border)', borderRadius: 6,
   padding: '9px 11px', fontSize: 13, outline: 'none', background: 'var(--input-bg)'

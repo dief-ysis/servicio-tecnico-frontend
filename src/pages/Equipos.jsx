@@ -6,11 +6,17 @@ import EstadoBadge from '../components/EstadoBadge'
 import { SkeletonTable } from '../components/Skeleton'
 import { useToast } from '../components/Toast'
 import { exportarEquipos } from '../utils/exportExcel'
+import { useIsMobile } from '../hooks/useIsMobile'
 
-const ESTADOS = ['', 'por_reparar', 'en_reparacion', 'reparado', 'irreparable', 'entregado']
+const ESTADOS = ['por_reparar', 'en_reparacion', 'espera_repuesto', 'reparado', 'irreparable', 'entregado']
 const ESTADOS_LABELS = {
-  '': 'Todos', por_reparar: 'Por reparar', en_reparacion: 'En reparación',
-  reparado: 'Reparado', irreparable: 'Irreparable', entregado: 'Entregado'
+  '': 'Todos',
+  por_reparar: 'Por reparar',
+  en_reparacion: 'En reparación',
+  espera_repuesto: 'Espera repuesto',
+  reparado: 'Reparado',
+  irreparable: 'Irreparable',
+  entregado: 'Entregado'
 }
 
 const inputStyle = {
@@ -58,22 +64,34 @@ export default function Equipos() {
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={() => exportarEquipos(equipos)} style={{
-          background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 4,
-          padding: '9px 16px', fontSize: 11, fontWeight: 800,
-          letterSpacing: '0.06em', cursor: 'pointer', color: 'var(--text-1)',
-          textTransform: 'uppercase'
-        }}>
-          Exportar Excel
-        </button>
-        <button onClick={() => setShowModal(true)} style={{
-          background: 'var(--primary)', border: 'none', borderRadius: 4,
-          padding: '9px 18px', fontSize: 11, fontWeight: 900,
-          letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer'
-        }}>
-          + Nuevo ingreso
-        </button>
+      <div style={{
+        display: 'flex', flexDirection: isMobile ? 'column' : 'row',
+        justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center',
+        marginBottom: 24, gap: isMobile ? 12 : 0
+      }}>
+        <h1 style={{ fontSize: isMobile ? 18 : 20, fontWeight: 900,
+          color: 'var(--text-1)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          Equipos
+        </h1>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => exportarEquipos(equipos)} style={{
+            flex: isMobile ? 1 : 'none',
+            background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+            borderRadius: 4, padding: '9px 16px', fontSize: 11, fontWeight: 800,
+            letterSpacing: '0.06em', cursor: 'pointer', color: 'var(--text-1)',
+            textTransform: 'uppercase'
+          }}>
+            {isSmall ? 'Excel' : 'Exportar Excel'}
+          </button>
+          <button onClick={() => setShowModal(true)} style={{
+            flex: isMobile ? 1 : 'none',
+            background: '#ffcd0d', border: 'none', borderRadius: 4,
+            padding: '9px 18px', fontSize: 11, fontWeight: 900,
+            letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer'
+          }}>
+            {isSmall ? '+ Ingreso' : '+ Nuevo ingreso'}
+          </button>
+        </div>
       </div>
 
       <div className="filtros-grid" style={{ display: 'flex', gap: 10, marginBottom: 18, flexWrap: 'wrap' }}>
@@ -125,6 +143,58 @@ export default function Equipos() {
           </button>
         )}
       </div>
+
+      {isMobile ? (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {loading ? (
+          <div style={{ color: 'var(--text-3)', fontSize: 13, padding: 16 }}>Cargando...</div>
+        ) : equipos.length === 0 ? (
+          <div style={{ color: 'var(--text-3)', fontSize: 13, padding: 16, textAlign: 'center' }}>
+            No hay equipos
+          </div>
+        ) : equipos.map(eq => (
+          <div key={eq.id}
+            onClick={() => navigate(`/equipos/${eq.id}`)}
+            style={{
+              background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+              borderRadius: 8, padding: '14px 16px', cursor: 'pointer'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+              <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#334862', fontWeight: 700 }}>
+                {eq.numero_ingreso}
+              </span>
+              <EstadoBadge estado={eq.estado_actual} />
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-1)', marginBottom: 4 }}>
+              {eq.cliente_nombre}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 4 }}>
+              {eq.tipo_equipo} · {eq.marca} {eq.modelo}
+            </div>
+            {eq.falla_reportada && (
+              <div style={{
+                fontSize: 11, color: 'var(--text-3)',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+              }}>
+                {eq.falla_reportada}
+              </div>
+            )}
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}>
+              {new Date(eq.fecha_ingreso).toLocaleDateString('es-CL', {
+                day: '2-digit', month: 'short', year: '2-digit'
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div className="tabla-scroll">
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 10, overflow: 'hidden' }}>
+          {/* tabla existente */}
+        </div>
+      </div>
+    )}
 
       <div className="tabla-scroll">
         <div style={{ background: 'var(--bg-card)', border: '0.5px solid var(--border-color)', borderRadius: 10, overflow: 'hidden' }}>
@@ -200,6 +270,7 @@ export default function Equipos() {
 
 function ModalNuevoEquipo({ onClose, onCreado }) {
   const toast = useToast()
+  const isMobile = useIsMobile()
   const [step, setStep] = useState(1)
   const [clientes, setClientes] = useState([])
   const [buscarCliente, setBuscarCliente] = useState('')
@@ -243,12 +314,25 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
   }
 
   const overlayStyle = {
-    position: 'fixed', inset: 0, background: 'var(--overlay)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999
+    position: 'fixed', inset: 0,
+    background: isMobile ? 'var(--bg-main)' : 'rgba(0,0,0,0.5)',
+    display: 'flex',
+    alignItems: isMobile ? 'flex-start' : 'center',
+    justifyContent: 'center',
+    zIndex: 999,
+    overflowY: isMobile ? 'auto' : 'hidden'
   }
+
   const modalStyle = {
-    background: 'var(--bg-card)', borderRadius: 12, width: '100%', maxWidth: 500,
-    maxHeight: '90vh', overflow: 'auto', padding: '28px 28px 24px'
+    background: 'var(--bg-card)',
+    borderRadius: isMobile ? 0 : 12,
+    width: '100%',
+    maxWidth: isMobile ? '100%' : 500,
+    height: isMobile ? '100%' : 'auto',
+    maxHeight: isMobile ? '100%' : '90vh',
+    overflow: 'auto',
+    padding: isMobile ? '24px 20px' : '28px 28px 24px',
+    margin: isMobile ? 0 : 'auto'
   }
 
   return (
@@ -341,7 +425,7 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
 
         {step === 2 && (
           <div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 12 }}>
               <div>
                 <label style={labelStyle}>Tipo de equipo *</label>
                 <input value={equipo.tipo_equipo} onChange={e => setEquipo(p => ({ ...p, tipo_equipo: e.target.value }))}

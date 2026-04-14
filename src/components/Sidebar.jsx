@@ -13,7 +13,7 @@ const links = [
 export default function Sidebar() {
   const { usuario, logout } = useAuth()
   const navigate = useNavigate()
-  const isMobile = useIsMobile()
+  const { isMobile } = useIsMobile()
 
   const handleLogout = () => { logout(); navigate('/login') }
 

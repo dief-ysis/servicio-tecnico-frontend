@@ -9,10 +9,11 @@ import { getSinMovimiento } from '../api/equipos'
 const estados = ['por_reparar', 'en_reparacion', 'reparado', 'irreparable', 'entregado']
 
 const statConfig = [
-  { key: 'por_reparar',   label: 'Por reparar',   color: 'var(--warning-text)', bg: 'var(--warning-bg)' },
-  { key: 'en_reparacion', label: 'En reparación', color: 'var(--info-text)', bg: 'var(--info-bg)' },
-  { key: 'reparado',      label: 'Reparados',     color: 'var(--success-text)', bg: 'var(--success-bg)' },
-  { key: 'irreparable',   label: 'Irreparables',  color: 'var(--danger-text)', bg: 'var(--danger-bg)' },
+  { key: 'por_reparar',     label: 'Por reparar',     color: '#8a6500', bg: '#fff8d6' },
+  { key: 'en_reparacion',   label: 'En reparación',   color: '#1a4f8a', bg: '#e6f0fb' },
+  { key: 'espera_repuesto', label: 'Espera repuesto', color: '#6b2fa0', bg: '#f5eafd' },
+  { key: 'reparado',        label: 'Reparados',       color: '#3b6011', bg: '#eaf3de' },
+  { key: 'irreparable',     label: 'Irreparables',    color: '#8a0000', bg: '#fce8e8' },
 ]
 
 export default function Dashboard() {
@@ -32,8 +33,10 @@ export default function Dashboard() {
   }, {})
 
   const pendientes = equipos.filter(e =>
-    e.estado_actual === 'por_reparar' || e.estado_actual === 'en_reparacion'
-  )
+  e.estado_actual === 'por_reparar' ||
+  e.estado_actual === 'en_reparacion' ||
+  e.estado_actual === 'espera_repuesto'
+)
 
   const listos = equipos.filter(e => e.estado_actual === 'reparado')
 
@@ -48,7 +51,11 @@ export default function Dashboard() {
       </h1>
 
       {loading ? <SkeletonCard /> : (
-        <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 28 }}>
+        <div className="stat-grid" style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(5, 1fr)',
+          gap: 12, marginBottom: 28
+        }}>
           {statConfig.map(({ key, label, color, bg }) => (
             <div key={key} style={{
               background: 'var(--bg-card)', border: '1px solid var(--border-color)',

@@ -5,7 +5,7 @@ import { useIsMobile } from '../hooks/useIsMobile'
 import { useDarkMode } from '../hooks/useDarkMode'
 
 export default function Layout({ children }) {
-  const isMobile = useIsMobile()
+  const { isMobile } = useIsMobile()
   const [dark, setDark] = useDarkMode()
 
   return (
