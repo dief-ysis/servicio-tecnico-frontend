@@ -49,8 +49,10 @@ export default function Login() {
       </div>
 
       <div style={{
-        background: 'var(--bg-card)', border: '0.5px solid var(--border)',
-        borderRadius: 10, padding: isMobile ? '28px 20px' : '40px 36px',
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border-color)',
+        borderRadius: 10,
+        padding: isMobile ? '28px 20px' : '36px 36px 32px',
         width: '100%', maxWidth: 380
       }}>
         <div style={{
@@ -73,7 +75,7 @@ export default function Login() {
               style={{
                 width: '100%', background: 'var(--input-bg)',
                 border: '1px solid var(--input-border)', borderRadius: 4,
-                padding: '11px 12px', color: 'var(--white)', fontSize: 14, outline: 'none'
+                padding: '11px 12px', color: 'var(--text-1)', fontSize: 14, outline: 'none'
               }}
             />
           </div>
@@ -90,7 +92,7 @@ export default function Login() {
               style={{
                 width: '100%', background: 'var(--input-bg)',
                 border: '1px solid var(--input-border)', borderRadius: 4,
-                padding: '11px 12px', color: 'var(--white)', fontSize: 14, outline: 'none'
+                padding: '11px 12px', color: 'var(--text-1)', fontSize: 14, outline: 'none'
               }}
             />
           </div>

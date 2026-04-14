@@ -134,7 +134,7 @@ export default function Usuarios() {
 }
 
 function ModalUsuario({ usuario, onClose, onGuardado }) {
-  const isMobile = useIsMobile()
+  const { isMobile } = useIsMobile()
   const [form, setForm] = useState({
     nombre: usuario?.nombre ?? '',
     email: usuario?.email ?? '',
@@ -170,11 +170,11 @@ function ModalUsuario({ usuario, onClose, onGuardado }) {
   return (
     <div style={{
       position: 'fixed', inset: 0,
-      background: isMobile ? 'var(--bg-main)' : 'rgba(0,0,0,0.5)',
+      background: 'rgba(0,0,0,0.6)',
       display: 'flex',
       alignItems: isMobile ? 'flex-start' : 'center',
       justifyContent: 'center',
-      zIndex: 999,
+      zIndex: 999, padding: 20,
       overflowY: isMobile ? 'auto' : 'hidden'
     }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
@@ -242,6 +242,7 @@ function ModalUsuario({ usuario, onClose, onGuardado }) {
 }
 
 function ModalPassword({ usuarioId, onClose }) {
+  const { isMobile } = useIsMobile()
   const [form, setForm] = useState({ password_actual: '', password_nuevo: '', confirmar: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -268,11 +269,11 @@ function ModalPassword({ usuarioId, onClose }) {
   return (
     <div style={{
       position: 'fixed', inset: 0,
-      background: isMobile ? 'var(--bg-main)' : 'rgba(0,0,0,0.5)',
+      background: 'rgba(0,0,0,0.6)',
       display: 'flex',
       alignItems: isMobile ? 'flex-start' : 'center',
       justifyContent: 'center',
-      zIndex: 999,
+      zIndex: 999, padding: 20,
       overflowY: isMobile ? 'auto' : 'hidden'
     }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{

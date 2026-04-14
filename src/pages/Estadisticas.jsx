@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  LineChart, Line, CartesianGrid, Legend
+  LineChart, Line, CartesianGrid, Cell
 } from 'recharts'
 import { getEstadisticas } from '../api/equipos'
 import { pageTitle } from '../components/UI'
@@ -72,7 +72,7 @@ export default function Estadisticas() {
         <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Cargando...</div>
       ) : (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 24 }}>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
             <StatCard label="Total equipos" value={totalEquipos} />
             <StatCard
               label="Total facturado"
@@ -90,15 +90,28 @@ export default function Estadisticas() {
             <ChartCard titulo="Equipos por estado">
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={barData} margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
-                  <XAxis dataKey="estado" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
-                  <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} allowDecimals={false} />
+                  <XAxis
+                    dataKey="estado"
+                    tick={{ fontSize: 10, fill: 'var(--text-3)' }}
+                    axisLine={{ stroke: 'var(--border-color)' }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10, fill: 'var(--text-3)' }}
+                    axisLine={false}
+                    tickLine={false}
+                    allowDecimals={false}
+                  />
                   <Tooltip
-                    contentStyle={{ fontSize: 12, border: '1px solid var(--border-color)', borderRadius: 4 }}
-                    cursor={{ fill: 'var(--border)' }}
+                    contentStyle={{
+                      background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                      borderRadius: 4, fontSize: 12
+                    }}
+                    cursor={{ fill: 'var(--bg-row-hover)' }}
                   />
                   <Bar dataKey="total" radius={[3, 3, 0, 0]}>
                     {barData.map((entry, i) => (
-                      <rect key={i} fill={entry.color} />
+                      <Cell key={i} fill={entry.color} fillOpacity={0.85} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -113,17 +126,30 @@ export default function Estadisticas() {
               ) : (
                 <ResponsiveContainer width="100%" height={220}>
                   <LineChart data={lineData} margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="fecha" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
-                    <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} allowDecimals={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+                    <XAxis
+                      dataKey="fecha"
+                      tick={{ fontSize: 10, fill: 'var(--text-3)' }}
+                      axisLine={{ stroke: 'var(--border-color)' }}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 10, fill: 'var(--text-3)' }}
+                      axisLine={false}
+                      tickLine={false}
+                      allowDecimals={false}
+                    />
                     <Tooltip
-                      contentStyle={{ fontSize: 12, border: '1px solid var(--border-color)', borderRadius: 4 }}
+                      contentStyle={{
+                        background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                        borderRadius: 4, fontSize: 12
+                      }}
                     />
                     <Line
                       type="monotone" dataKey="ingresos"
                       stroke="var(--primary)" strokeWidth={2}
-                      dot={{ fill: 'var(--primary)', r: 3 }}
-                      activeDot={{ r: 5 }}
+                      dot={{ fill: 'var(--primary)', r: 3, strokeWidth: 0 }}
+                      activeDot={{ r: 5, fill: 'var(--primary)' }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -139,13 +165,19 @@ export default function Estadisticas() {
 function StatCard({ label, value }) {
   return (
     <div style={{
-      background: 'var(--white)', border: '1px solid var(--border-color)',
-      borderRadius: 6, padding: '16px 18px',
-      borderLeft: '4px solid var(--primary)'
+      background: 'var(--bg-card)',
+      border: '1px solid var(--border-color)',
+      borderRadius: 6, padding: '20px 22px',
+      borderLeft: '4px solid var(--primary)',
+      flex: 1
     }}>
-      <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--black)' }}>{value}</div>
-      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3, fontWeight: 700,
-        textTransform: 'uppercase', letterSpacing: '0.07em' }}>{label}</div>
+      <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--text-1)', marginBottom: 4 }}>
+        {value}
+      </div>
+      <div style={{
+        fontSize: 10, color: 'var(--text-3)', fontWeight: 700,
+        textTransform: 'uppercase', letterSpacing: '0.08em'
+      }}>{label}</div>
     </div>
   )
 }

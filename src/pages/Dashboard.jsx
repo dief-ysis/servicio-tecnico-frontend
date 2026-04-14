@@ -46,7 +46,10 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h1 style={pageTitle}>
+      <h1 style={{
+        fontSize: 18, fontWeight: 900, color: 'var(--text-1)',
+        textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 24
+      }}>
         Dashboard
       </h1>
 
