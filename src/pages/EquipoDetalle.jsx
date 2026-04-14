@@ -1,17 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getEquipo, cambiarEstado, getHistorial, actualizarEquipo } from '../api/equipos'
+import { getEquipo, cambiarEstado, getHistorial, actualizarEquipo, subirFoto } from '../api/equipos'
 import EstadoBadge from '../components/EstadoBadge'
 import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../components/Toast'
-import { subirFoto } from '../api/equipos'
+import { useIsMobile } from '../hooks/useIsMobile'
 
-const ESTADOS = ['por_reparar', 'en_reparacion', 'espera_repuesto', 'reparado', 'irreparable', 'entregado']
 const inputStyle = {
-  width: '100%', border: '0.5px solid var(--input-border)', borderRadius: 6,
-  padding: '9px 11px', fontSize: 13, outline: 'none', background: 'var(--input-bg)'
+  width: '100%', border: '1px solid var(--input-border)', borderRadius: 4,
+  padding: '9px 11px', fontSize: 13, outline: 'none',
+  background: 'var(--input-bg)', color: 'var(--text-1)', resize: 'vertical'
 }
-const labelStyle = { fontSize: 12, color: 'var(--text-2)', display: 'block', marginBottom: 5 }
 
 const estadoConfig = {
   por_reparar:    { label: 'Por reparar',     bg: 'var(--warning-bg)',   color: 'var(--warning-text)',  border: '#e6d060' },
@@ -22,17 +21,21 @@ const estadoConfig = {
   entregado:      { label: 'Entregado',       bg: 'var(--border-color)', color: 'var(--text-2)',        border: 'var(--border-color)' },
 }
 
+const ESTADOS = ['por_reparar', 'en_reparacion', 'espera_repuesto', 'reparado', 'irreparable', 'entregado']
+
 export default function EquipoDetalle() {
-  const toast = useToast()
   const { id } = useParams()
   const navigate = useNavigate()
   const { usuario } = useAuth()
+  const toast = useToast()
+  const { isMobile } = useIsMobile()
   const [equipo, setEquipo] = useState(null)
   const [historial, setHistorial] = useState([])
   const [loading, setLoading] = useState(true)
   const [editando, setEditando] = useState(false)
   const [form, setForm] = useState({})
   const [guardando, setGuardando] = useState(false)
+  const [estadoPendiente, setEstadoPendiente] = useState(null)
   const [subiendo, setSubiendo] = useState(false)
 
   const cargar = () => {
@@ -50,8 +53,6 @@ export default function EquipoDetalle() {
   }
 
   useEffect(() => { cargar() }, [id])
-
-  const [estadoPendiente, setEstadoPendiente] = useState(null)
 
   const handleEstado = async (estado) => {
     if (estado === 'irreparable' || estado === 'entregado') {
@@ -82,7 +83,7 @@ export default function EquipoDetalle() {
     if (!file) return
     setSubiendo(true)
     try {
-      const res = await subirFoto(id, file)
+      await subirFoto(id, file)
       toast('Foto subida correctamente')
       cargar()
     } catch {
@@ -93,186 +94,242 @@ export default function EquipoDetalle() {
   }
 
   const formatFecha = (iso) => iso ? new Date(iso).toLocaleString('es-CL', {
-    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
   }) : '—'
 
-  if (loading) return <div style={{ color: 'var(--text-3)' }}>Cargando...</div>
-  if (!equipo) return <div>Equipo no encontrado</div>
+  if (loading) return <div style={{ color: 'var(--text-3)', padding: 20 }}>Cargando...</div>
+  if (!equipo) return <div style={{ color: 'var(--text-3)', padding: 20 }}>Equipo no encontrado</div>
 
   return (
-    <div>
-      <button onClick={() => navigate('/equipos')} style={{
-        background: 'none', border: 'none', color: 'var(--link)',
-        fontSize: 13, cursor: 'pointer', marginBottom: 16, padding: 0
-      }}>
-        ← Volver a equipos
-      </button>
+    <div style={{ maxWidth: 1100 }}>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-        <div>
-          <div style={{ fontFamily: 'monospace', fontSize: 13, color: 'var(--link)', marginBottom: 4 }}>
-            {equipo.numero_ingreso}
+      {/* Header */}
+      <div style={{ marginBottom: 20 }}>
+        <button onClick={() => navigate('/equipos')} style={{
+          background: 'none', border: 'none', color: 'var(--link)',
+          fontSize: 12, cursor: 'pointer', padding: 0, fontWeight: 600,
+          marginBottom: 10, display: 'block'
+        }}>← Volver a equipos</button>
+
+        <div style={{
+          display: 'flex', justifyContent: 'space-between',
+          alignItems: 'flex-start', flexWrap: 'wrap', gap: 12
+        }}>
+          <div>
+            <div style={{
+              fontFamily: 'monospace', fontSize: 12,
+              color: 'var(--link)', marginBottom: 4, fontWeight: 700
+            }}>
+              {equipo.numero_ingreso}
+            </div>
+            <h1 style={{
+              fontSize: isMobile ? 18 : 22, fontWeight: 900,
+              color: 'var(--text-1)', textTransform: 'uppercase',
+              letterSpacing: '0.03em'
+            }}>
+              {equipo.marca} {equipo.modelo || equipo.tipo_equipo}
+            </h1>
           </div>
-          <h1 style={{ fontSize: 20, fontWeight: 800 }}>
-            {equipo.marca} {equipo.modelo || equipo.tipo_equipo}
-          </h1>
-        </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <EstadoBadge estado={equipo.estado_actual} />
-          <button onClick={() => navigate(`/equipos/${id}/orden`)} style={{
-            background: 'var(--black)', color: 'var(--primary)', border: 'none',
-            borderRadius: 4, padding: '6px 14px', fontSize: 10,
-            fontWeight: 900, letterSpacing: '0.08em',
-            textTransform: 'uppercase', cursor: 'pointer'
-          }}>
-            Imprimir orden
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <EstadoBadge estado={equipo.estado_actual} />
+            <button onClick={() => navigate(`/equipos/${id}/orden`)} style={{
+              background: '#000', color: '#ffcd0d', border: 'none',
+              borderRadius: 4, padding: '7px 14px', fontSize: 10,
+              fontWeight: 900, letterSpacing: '0.08em',
+              textTransform: 'uppercase', cursor: 'pointer'
+            }}>
+              Imprimir orden
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="detalle-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-        <div style={{ background: 'var(--bg-card)', border: '0.5px solid var(--border-color)', borderRadius: 10, padding: '18px 20px' }}>
-          <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 14 }}>Datos del cliente</div>
-          <div style={{ fontSize: 13, marginBottom: 6 }}><span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Nombre</span>: <span style={{ fontSize: 13, color: 'var(--text-1)', fontWeight: 500 }}>{equipo.cliente_nombre}</span></div>
-          <div style={{ fontSize: 13 }}><span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Teléfono</span>: <span style={{ fontSize: 13, color: 'var(--text-1)', fontWeight: 500 }}>{equipo.cliente_telefono ?? '—'}</span></div>
+      {/* Grid info */}
+      <div className="detalle-grid" style={{
+        display: 'grid', gridTemplateColumns: '1fr 1fr',
+        gap: 12, marginBottom: 12
+      }}>
+        {/* Cliente */}
+        <div style={{
+          background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+          borderRadius: 8, padding: '18px 20px'
+        }}>
+          <div style={{
+            fontSize: 9, fontWeight: 900, textTransform: 'uppercase',
+            letterSpacing: '0.12em', color: 'var(--text-3)',
+            marginBottom: 14, paddingBottom: 8,
+            borderBottom: '1px solid var(--border-color)'
+          }}>Datos del cliente</div>
+          <DataRow label="Nombre" value={equipo.cliente_nombre} />
+          <DataRow label="Teléfono" value={equipo.cliente_telefono} />
         </div>
 
-        <div style={{ background: 'var(--bg-card)', border: '0.5px solid var(--border-color)', borderRadius: 10, padding: '18px 20px' }}>
-          <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 14 }}>Datos del equipo</div>
-          <div style={{ fontSize: 13, marginBottom: 6 }}><span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Tipo</span>: <span style={{ fontSize: 13, color: 'var(--text-1)', fontWeight: 500 }}>{equipo.tipo_equipo}</span></div>
-          <div style={{ fontSize: 13, marginBottom: 6 }}><span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Marca/Modelo</span>: <span style={{ fontSize: 13, color: 'var(--text-1)', fontWeight: 500 }}>{equipo.marca} {equipo.modelo}</span></div>
-          <div style={{ fontSize: 13, marginBottom: 6 }}><span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>N° de serie</span>: <span style={{ fontSize: 13, color: 'var(--text-1)', fontWeight: 500 }}>{equipo.password_pin ?? '—'}</span></div>
-          <div style={{ fontSize: 13, marginBottom: 6 }}><span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Accesorios</span>: <span style={{ fontSize: 13, color: 'var(--text-1)', fontWeight: 500 }}>{equipo.accesorios ?? '—'}</span></div>
-          <div style={{ fontSize: 13 }}><span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Ingreso</span>: <span style={{ fontSize: 13, color: 'var(--text-1)', fontWeight: 500 }}>{formatFecha(equipo.fecha_ingreso)}</span></div>
+        {/* Equipo */}
+        <div style={{
+          background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+          borderRadius: 8, padding: '18px 20px'
+        }}>
+          <div style={{
+            fontSize: 9, fontWeight: 900, textTransform: 'uppercase',
+            letterSpacing: '0.12em', color: 'var(--text-3)',
+            marginBottom: 14, paddingBottom: 8,
+            borderBottom: '1px solid var(--border-color)'
+          }}>Datos del equipo</div>
+          <DataRow label="Tipo" value={equipo.tipo_equipo} />
+          <DataRow label="Marca" value={equipo.marca} />
+          <DataRow label="Modelo" value={equipo.modelo} />
+          <DataRow label="N° serie" value={equipo.password_pin} />
+          <DataRow label="Accesorios" value={equipo.accesorios} />
+          <DataRow label="Ingreso" value={formatFecha(equipo.fecha_ingreso)} />
+          {equipo.fecha_entrega && (
+            <DataRow label="Entregado" value={formatFecha(equipo.fecha_entrega)} highlight />
+          )}
         </div>
       </div>
 
+      {/* Diagnóstico */}
       <div style={{
-        background: 'var(--bg-card)', border: '0.5px solid var(--border-color)',
-        borderLeft: '4px solid var(--primary)',
-        borderRadius: 10, padding: '18px 20px', marginBottom: 16
+        background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+        borderLeft: '4px solid #ffcd0d',
+        borderRadius: 8, padding: '18px 20px', marginBottom: 12
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <div style={{ fontWeight: 700, fontSize: 13 }}>Diagnóstico y notas
-            <div style={{ marginBottom: 14 }}>
-              <label style={labelStyle}>Notas internas del técnico</label>
-              {editando ? (
-                <textarea value={form.notas_tecnico}
-                  onChange={e => setForm(p => ({ ...p, notas_tecnico: e.target.value }))}
-                  rows={2} placeholder="falta repuesto, cliente llamó, revisar fuente..."
-                  style={{ ...inputStyle, resize: 'vertical' }} />
-              ) : (
-                <div style={{ fontSize: 13, color: 'var(--text-1)', padding: '8px 0' }}>
-                  {equipo.notas_tecnico
-                    ? <span style={{
-                        background: 'var(--warning-bg)', border: '1px solid var(--warning-text)',
-                        borderRadius: 4, padding: '6px 10px', display: 'inline-block',
-                        fontSize: 12, color: 'var(--warning-text)'
-                      }}>{equipo.notas_tecnico}</span>
-                    : '—'}
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label style={labelStyle}>Costo de reparación</label>
-              {editando ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 13, color: 'var(--text-2)' }}>$</span>
-                  <input
-                    type="number" min="0" step="100"
-                    value={form.costo_reparacion}
-                    onChange={e => setForm(p => ({ ...p, costo_reparacion: e.target.value }))}
-                    style={{ ...inputStyle, maxWidth: 160 }}
-                    placeholder="0"
-                  />
-                </div>
-              ) : (
-                <div style={{ fontSize: 14, fontWeight: 900, color: 'var(--text-1)', padding: '8px 0' }}>
-                  {equipo.costo_reparacion
-                    ? `$${Number(equipo.costo_reparacion).toLocaleString('es-CL')}`
-                    : '—'}
-                </div>
-              )}
-            </div>
-          </div>
+        <div style={{
+          display: 'flex', justifyContent: 'space-between',
+          alignItems: 'center', marginBottom: 16
+        }}>
+          <div style={{
+            fontSize: 9, fontWeight: 900, textTransform: 'uppercase',
+            letterSpacing: '0.12em', color: 'var(--text-3)'
+          }}>Diagnóstico y notas</div>
           {usuario.rol === 'tecnico' && (
             <button onClick={() => editando ? handleGuardar() : setEditando(true)} style={{
-              background: editando ? 'var(--primary)' : 'none',
-              border: '0.5px solid var(--border)', borderRadius: 6,
-              padding: '5px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer'
+              background: editando ? '#ffcd0d' : 'none',
+              border: '1px solid var(--border-color)', borderRadius: 4,
+              padding: '6px 14px', fontSize: 10, fontWeight: 800,
+              letterSpacing: '0.06em', textTransform: 'uppercase',
+              cursor: 'pointer', color: editando ? '#000' : 'var(--text-2)'
             }}>
               {guardando ? 'Guardando...' : editando ? 'Guardar' : 'Editar'}
             </button>
           )}
         </div>
 
-        <div style={{ marginBottom: 14 }}>
-          <label style={labelStyle}>Falla reportada</label>
-          <div style={{ fontSize: 13, color: 'var(--text-1)', padding: '8px 0' }}>
-            {equipo.falla_reportada ?? '—'}
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
+          <div>
+            <FieldLabel>Falla reportada</FieldLabel>
+            <FieldValue>{equipo.falla_reportada}</FieldValue>
+          </div>
+          <div>
+            <FieldLabel>Diagnóstico técnico</FieldLabel>
+            {editando ? (
+              <textarea value={form.diagnostico}
+                onChange={e => setForm(p => ({ ...p, diagnostico: e.target.value }))}
+                rows={3} style={inputStyle} />
+            ) : (
+              <FieldValue>{equipo.diagnostico}</FieldValue>
+            )}
+          </div>
+          <div>
+            <FieldLabel>Notas internas del técnico</FieldLabel>
+            {editando ? (
+              <textarea value={form.notas_tecnico}
+                onChange={e => setForm(p => ({ ...p, notas_tecnico: e.target.value }))}
+                rows={2} placeholder="falta repuesto, cliente llamó..."
+                style={inputStyle} />
+            ) : (
+              equipo.notas_tecnico ? (
+                <div style={{
+                  background: 'var(--warning-bg)', border: '1px solid #e6d060',
+                  borderRadius: 4, padding: '8px 10px',
+                  fontSize: 12, color: 'var(--warning-text)', marginTop: 4
+                }}>
+                  {equipo.notas_tecnico}
+                </div>
+              ) : <FieldValue>{equipo.notas_tecnico}</FieldValue>
+            )}
+          </div>
+          <div>
+            <FieldLabel>Observaciones internas</FieldLabel>
+            {editando ? (
+              <textarea value={form.observaciones}
+                onChange={e => setForm(p => ({ ...p, observaciones: e.target.value }))}
+                rows={2} style={inputStyle} />
+            ) : (
+              <FieldValue>{equipo.observaciones}</FieldValue>
+            )}
           </div>
         </div>
-        <div style={{ marginBottom: 14 }}>
-          <label style={labelStyle}>Diagnóstico técnico</label>
+
+        {/* Costo */}
+        <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border-color)' }}>
+          <FieldLabel>Costo de reparación</FieldLabel>
           {editando ? (
-            <textarea value={form.diagnostico} onChange={e => setForm(p => ({ ...p, diagnostico: e.target.value }))}
-              rows={3} style={{ ...inputStyle, resize: 'vertical' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+              <span style={{ fontSize: 13, color: 'var(--text-2)', fontWeight: 700 }}>$</span>
+              <input type="number" min="0" step="100"
+                value={form.costo_reparacion}
+                onChange={e => setForm(p => ({ ...p, costo_reparacion: e.target.value }))}
+                style={{ ...inputStyle, maxWidth: 160, resize: 'none' }}
+                placeholder="0" />
+            </div>
           ) : (
-            <div style={{ fontSize: 13, color: 'var(--text-1)', padding: '8px 0' }}>{equipo.diagnostico ?? '—'}</div>
-          )}
-        </div>
-        <div>
-          <label style={labelStyle}>Observaciones internas</label>
-          {editando ? (
-            <textarea value={form.observaciones} onChange={e => setForm(p => ({ ...p, observaciones: e.target.value }))}
-              rows={2} style={{ ...inputStyle, resize: 'vertical' }} />
-          ) : (
-            <div style={{ fontSize: 13, color: 'var(--text-1)', padding: '8px 0' }}>{equipo.observaciones ?? '—'}</div>
+            <div style={{
+              fontSize: 20, fontWeight: 900, color: 'var(--text-1)',
+              marginTop: 4
+            }}>
+              {equipo.costo_reparacion
+                ? `$${Number(equipo.costo_reparacion).toLocaleString('es-CL')}`
+                : <span style={{ fontSize: 14, color: 'var(--text-3)', fontWeight: 400 }}>—</span>}
+            </div>
           )}
         </div>
       </div>
 
-      <div style={{ marginTop: 14, borderTop: '1px solid var(--border)', paddingTop: 14 }}>
+      {/* Foto */}
+      <div style={{
+        background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+        borderRadius: 8, padding: '18px 20px', marginBottom: 12
+      }}>
+        <div style={{
+          fontSize: 9, fontWeight: 900, textTransform: 'uppercase',
+          letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: 14
+        }}>Foto del equipo</div>
         {equipo.foto_url ? (
-          <div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 700,
-              textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-              Foto del equipo
-            </div>
-            <img
-              src={equipo.foto_url}
-              alt="Foto del equipo"
-              style={{ width: '100%', borderRadius: 6, border: '1px solid var(--border-color)', cursor: 'pointer' }}
-              onClick={() => window.open(equipo.foto_url, '_blank')}
-            />
-          </div>
+          <img src={equipo.foto_url} alt="Foto del equipo"
+            style={{
+              width: '100%', maxWidth: 400, borderRadius: 6,
+              border: '1px solid var(--border-color)', cursor: 'pointer',
+              display: 'block'
+            }}
+            onClick={() => window.open(equipo.foto_url, '_blank')}
+          />
         ) : (
-          <label style={{ cursor: 'pointer' }}>
+          <label style={{ cursor: 'pointer', display: 'block' }}>
             <div style={{
-              border: '1px dashed var(--border)', borderRadius: 6, padding: '20px',
-              textAlign: 'center', color: 'var(--text-3)', fontSize: 12
+              border: '2px dashed var(--border-color)', borderRadius: 6,
+              padding: '24px', textAlign: 'center',
+              color: 'var(--text-3)', fontSize: 12, fontWeight: 600,
+              letterSpacing: '0.04em'
             }}>
               {subiendo ? 'Subiendo...' : '+ Agregar foto del equipo'}
             </div>
-            <input
-              type="file" accept="image/*" capture="environment"
+            <input type="file" accept="image/*" capture="environment"
               onChange={handleFoto} style={{ display: 'none' }}
-              disabled={subiendo}
-            />
+              disabled={subiendo} />
           </label>
         )}
       </div>
 
+      {/* Cambiar estado */}
       {usuario.rol === 'tecnico' && (
         <div style={{
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border-color)',
-          borderRadius: 10, padding: '18px 20px', marginBottom: 16
+          background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+          borderRadius: 8, padding: '18px 20px', marginBottom: 12
         }}>
           <div style={{
-            fontWeight: 900, fontSize: 11, textTransform: 'uppercase',
-            letterSpacing: '0.08em', marginBottom: 14, color: 'var(--text-3)'
+            fontSize: 9, fontWeight: 900, textTransform: 'uppercase',
+            letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: 14
           }}>Cambiar estado</div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {ESTADOS.map(estado => {
@@ -284,7 +341,7 @@ export default function EquipoDetalle() {
                   style={{
                     background: isActive ? cfg.bg : 'var(--bg-main)',
                     border: `1px solid ${isActive ? cfg.border : 'var(--border-color)'}`,
-                    borderRadius: 4, padding: '7px 14px',
+                    borderRadius: 4, padding: '8px 14px',
                     fontSize: 10, fontWeight: isActive ? 900 : 700,
                     letterSpacing: '0.06em', textTransform: 'uppercase',
                     color: isActive ? cfg.color : 'var(--text-2)',
@@ -314,42 +371,95 @@ export default function EquipoDetalle() {
         </div>
       )}
 
+      {/* Historial */}
+      <div style={{
+        background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+        borderRadius: 8, overflow: 'hidden'
+      }}>
+        <div style={{
+          padding: '14px 20px', borderBottom: '1px solid var(--border-color)',
+          fontSize: 9, fontWeight: 900, textTransform: 'uppercase',
+          letterSpacing: '0.12em', color: 'var(--text-3)'
+        }}>Historial de cambios</div>
+        {historial.length === 0 ? (
+          <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>
+            Sin historial
+          </div>
+        ) : historial.map(h => (
+          <div key={h.id} style={{
+            padding: '11px 20px',
+            borderBottom: '1px solid var(--border-color)',
+            display: 'flex', justifyContent: 'space-between',
+            alignItems: 'flex-start', gap: 16
+          }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <span style={{
+                fontSize: 9, fontWeight: 900, color: '#ffcd0d',
+                textTransform: 'uppercase', letterSpacing: '0.1em',
+                marginRight: 8
+              }}>
+                {h.campo_modificado.replace(/_/g, ' ')}
+              </span>
+              <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
+                {h.valor_anterior ?? 'vacío'}
+              </span>
+              <span style={{ fontSize: 12, color: 'var(--text-3)', margin: '0 6px' }}>→</span>
+              <span style={{ fontSize: 12, color: 'var(--text-1)', fontWeight: 700 }}>
+                {h.valor_nuevo ?? '—'}
+              </span>
+            </div>
+            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-2)', fontWeight: 700 }}>
+                {h.usuario_nombre}
+              </div>
+              <div style={{ fontSize: 10, color: 'var(--text-3)' }}>
+                {formatFecha(h.fecha_cambio)}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Modal confirmación estados críticos */}
       {estadoPendiente && (
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 999, padding: 20
         }}>
           <div style={{
-            background: 'var(--bg-card)', borderRadius: 6, padding: '28px 28px 24px',
-            width: '100%', maxWidth: 380, border: '1px solid var(--border)',
+            background: 'var(--bg-card)', borderRadius: 8,
+            padding: '28px 28px 24px', width: '100%', maxWidth: 380,
+            border: '1px solid var(--border-color)', color: 'var(--text-1)'
           }}>
             <div style={{
               fontSize: 11, fontWeight: 900, textTransform: 'uppercase',
               letterSpacing: '0.08em', marginBottom: 12,
-              color: estadoPendiente === 'irreparable' ? 'var(--danger-text)' : 'var(--success-text)'
+              color: estadoPendiente === 'irreparable'
+                ? 'var(--danger-text)' : 'var(--success-text)'
             }}>
-              {estadoPendiente === 'irreparable' ? '⚠ Confirmar irreparable' : '✓ Confirmar entrega'}
-            </div>
-            <p style={{ fontSize: 13, color: 'var(--text-1)', lineHeight: 1.6, marginBottom: 20 }}>
               {estadoPendiente === 'irreparable'
-                ? `¿Confirmas que el equipo ${equipo.numero_ingreso} no tiene reparación posible? Esta acción quedará registrada en el historial.`
-                : `¿Confirmas que el equipo ${equipo.numero_ingreso} fue entregado al cliente ${equipo.cliente_nombre}? Se registrará la fecha de entrega.`
-              }
+                ? '⚠ Confirmar irreparable'
+                : '✓ Confirmar entrega'}
+            </div>
+            <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.6, marginBottom: 20 }}>
+              {estadoPendiente === 'irreparable'
+                ? `¿Confirmas que el equipo ${equipo.numero_ingreso} no tiene reparación posible?`
+                : `¿Confirmas que el equipo ${equipo.numero_ingreso} fue entregado a ${equipo.cliente_nombre}?`}
             </p>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <button onClick={() => setEstadoPendiente(null)} style={{
-                background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 4,
-                padding: '9px 16px', fontSize: 11, fontWeight: 700,
-                textTransform: 'uppercase', letterSpacing: '0.06em', cursor: 'pointer'
-              }}>
-                Cancelar
-              </button>
+                background: 'none', border: '1px solid var(--border-color)',
+                borderRadius: 4, padding: '9px 16px', fontSize: 11,
+                fontWeight: 700, letterSpacing: '0.06em', cursor: 'pointer',
+                color: 'var(--text-1)'
+              }}>Cancelar</button>
               <button onClick={() => aplicarEstado(estadoPendiente)} style={{
-                background: estadoPendiente === 'irreparable' ? 'var(--danger)' : 'var(--black)',
-                color: estadoPendiente === 'irreparable' ? 'var(--white)' : 'var(--primary)',
-                border: 'none', borderRadius: 4,
-                padding: '9px 18px', fontSize: 11, fontWeight: 900,
-                textTransform: 'uppercase', letterSpacing: '0.08em', cursor: 'pointer'
+                background: estadoPendiente === 'irreparable' ? '#8a0000' : '#000',
+                color: estadoPendiente === 'irreparable' ? '#fff' : '#ffcd0d',
+                border: 'none', borderRadius: 4, padding: '9px 18px',
+                fontSize: 11, fontWeight: 900, letterSpacing: '0.08em',
+                textTransform: 'uppercase', cursor: 'pointer'
               }}>
                 {estadoPendiente === 'irreparable' ? 'Confirmar' : 'Confirmar entrega'}
               </button>
@@ -357,41 +467,45 @@ export default function EquipoDetalle() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
 
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 10, overflow: 'hidden', marginTop: 14 }}>
-          <div style={{ padding: '14px 20px', borderBottom: '0.5px solid var(--border-color)', fontWeight: 700, fontSize: 13 }}>
-            Historial de cambios
-          </div>
-          {historial.length === 0 ? (
-            <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>Sin historial</div>
-          ) : historial.map(h => (
-            <div key={h.id} style={{
-              padding: '12px 20px',
-              borderBottom: '1px solid var(--border-color)',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'
-            }}>
-              <div>
-                <span style={{
-                  fontSize: 11, fontWeight: 800, color: 'var(--primary)',
-                  textTransform: 'uppercase', letterSpacing: '0.06em'
-                }}>
-                  {h.campo_modificado.replace(/_/g, ' ')}
-                </span>
-                <span style={{ fontSize: 12, color: 'var(--text-3)', margin: '0 8px' }}>
-                  {h.valor_anterior ?? 'vacío'}
-                </span>
-                <span style={{ fontSize: 12, color: 'var(--text-3)' }}>→</span>
-                <span style={{ fontSize: 12, color: 'var(--text-1)', fontWeight: 600, marginLeft: 8 }}>
-                  {h.valor_nuevo}
-                </span>
-              </div>
-              <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 16 }}>
-                <div style={{ fontSize: 11, color: 'var(--text-2)', fontWeight: 600 }}>{h.usuario_nombre}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{formatFecha(h.fecha_cambio)}</div>
-              </div>
-            </div>
-          ))}
-        </div>
+function DataRow({ label, value, highlight }) {
+  return (
+    <div style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'baseline' }}>
+      <span style={{
+        fontSize: 9, fontWeight: 900, color: 'var(--text-3)',
+        textTransform: 'uppercase', letterSpacing: '0.08em',
+        minWidth: 70, flexShrink: 0
+      }}>{label}</span>
+      <span style={{
+        fontSize: 13, color: highlight ? 'var(--success-text)' : 'var(--text-1)',
+        fontWeight: highlight ? 700 : 400
+      }}>
+        {value ?? '—'}
+      </span>
+    </div>
+  )
+}
+
+function FieldLabel({ children }) {
+  return (
+    <div style={{
+      fontSize: 9, fontWeight: 900, color: 'var(--text-3)',
+      textTransform: 'uppercase', letterSpacing: '0.1em',
+      marginBottom: 6
+    }}>{children}</div>
+  )
+}
+
+function FieldValue({ children }) {
+  return (
+    <div style={{
+      fontSize: 13, color: children ? 'var(--text-1)' : 'var(--text-3)',
+      lineHeight: 1.5, paddingBottom: 4
+    }}>
+      {children || '—'}
     </div>
   )
 }
