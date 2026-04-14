@@ -20,10 +20,22 @@ const ESTADOS_LABELS = {
 }
 
 const inputStyle = {
-  width: '100%', border: '0.5px solid var(--input-border)', borderRadius: 6,
-  padding: '9px 11px', fontSize: 13, outline: 'none', background: 'var(--input-bg)'
+  width: '100%',
+  border: '1px solid var(--input-border)',
+  borderRadius: 6,
+  padding: '9px 11px',
+  fontSize: 13,
+  outline: 'none',
+  background: 'var(--input-bg)',
+  color: 'var(--text-1)'
 }
-const labelStyle = { fontSize: 12, color: 'var(--text-2)', display: 'block', marginBottom: 5 }
+
+const labelStyle = {
+  fontSize: 11, fontWeight: 700,
+  color: 'var(--text-2)',
+  display: 'block', marginBottom: 5,
+  textTransform: 'uppercase', letterSpacing: '0.06em'
+}
 
 export default function Equipos() {
   const toast = useToast()
@@ -288,10 +300,16 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
   useEffect(() => {
     if (buscarCliente.length >= 2) {
       getClientes({ buscar: buscarCliente }).then(r => setClientes(r.data))
+    } else if (buscarCliente.length === 0) {
+      getClientes({}).then(r => setClientes(r.data.slice(0, 6)))
     } else {
       setClientes([])
     }
   }, [buscarCliente])
+
+  useEffect(() => {
+    getClientes({}).then(r => setClientes(r.data.slice(0, 6)))
+  }, [])
 
   const handleSubmit = async () => {
     setError('')
@@ -316,29 +334,26 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
 
   const overlayStyle = {
     position: 'fixed', inset: 0,
-    background: isMobile ? 'var(--bg-main)' : 'rgba(0,0,0,0.5)',
-    display: 'flex',
-    alignItems: isMobile ? 'flex-start' : 'center',
-    justifyContent: 'center',
-    zIndex: 999,
-    overflowY: isMobile ? 'auto' : 'hidden'
+    background: 'rgba(0,0,0,0.7)',
+    display: 'flex', alignItems: 'center',
+    justifyContent: 'center', zIndex: 999,
+    padding: isMobile ? 0 : '20px'
   }
 
   const modalStyle = {
     background: 'var(--bg-card)',
-    borderRadius: isMobile ? 0 : 12,
+    borderRadius: isMobile ? 0 : 10,
     width: '100%',
-    maxWidth: isMobile ? '100%' : 500,
+    maxWidth: isMobile ? '100%' : 520,
+    maxHeight: isMobile ? '100vh' : '90vh',
     height: isMobile ? '100%' : 'auto',
-    maxHeight: isMobile ? '100%' : '90vh',
     overflow: 'auto',
-    padding: isMobile ? '24px 20px' : '28px 28px 24px',
-    margin: isMobile ? 0 : 'auto'
+    padding: '28px 28px 24px'
   }
 
   return (
     <div style={overlayStyle} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={modalStyle}>
+      <div style={{modalStyle, color: 'var(--text-1)'}}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <h2 style={{ fontSize: 16, fontWeight: 800 }}>
             {step === 1 ? 'Paso 1 — Cliente' : 'Paso 2 — Equipo'}
@@ -350,7 +365,7 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
           <div>
             {!modoNuevoCliente ? (
               <>
-                <label style={labelStyle}>Buscar cliente existente</label>
+                <label style={labelStyle}>Buscar cliente o selecciona uno reciente</label>
                 <input
                   placeholder="Nombre o teléfono..."
                   value={buscarCliente}

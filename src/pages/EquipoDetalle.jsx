@@ -13,6 +13,15 @@ const inputStyle = {
 }
 const labelStyle = { fontSize: 12, color: 'var(--text-2)', display: 'block', marginBottom: 5 }
 
+const estadoConfig = {
+  por_reparar:    { label: 'Por reparar',     bg: 'var(--warning-bg)',   color: 'var(--warning-text)',  border: '#e6d060' },
+  en_reparacion:  { label: 'En reparación',   bg: 'var(--info-bg)',      color: 'var(--info-text)',     border: '#a0c0e8' },
+  espera_repuesto:{ label: 'Espera repuesto', bg: '#f5eafd',             color: '#6b2fa0',              border: '#c9a0e8' },
+  reparado:       { label: 'Reparado',        bg: 'var(--success-bg)',   color: 'var(--success-text)',  border: '#a8cc80' },
+  irreparable:    { label: 'Irreparable',     bg: 'var(--danger-bg)',    color: 'var(--danger-text)',   border: '#e8a0a0' },
+  entregado:      { label: 'Entregado',       bg: 'var(--border-color)', color: 'var(--text-2)',        border: 'var(--border-color)' },
+}
+
 export default function EquipoDetalle() {
   const toast = useToast()
   const { id } = useParams()
@@ -124,21 +133,25 @@ export default function EquipoDetalle() {
       <div className="detalle-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
         <div style={{ background: 'var(--bg-card)', border: '0.5px solid var(--border-color)', borderRadius: 10, padding: '18px 20px' }}>
           <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 14 }}>Datos del cliente</div>
-          <div style={{ fontSize: 13, marginBottom: 6 }}><span style={{ color: 'var(--text-3)' }}>Nombre: </span>{equipo.cliente_nombre}</div>
-          <div style={{ fontSize: 13 }}><span style={{ color: 'var(--text-3)' }}>Teléfono: </span>{equipo.cliente_telefono ?? '—'}</div>
+          <div style={{ fontSize: 13, marginBottom: 6 }}><span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Nombre</span>: <span style={{ fontSize: 13, color: 'var(--text-1)', fontWeight: 500 }}>{equipo.cliente_nombre}</span></div>
+          <div style={{ fontSize: 13 }}><span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Teléfono</span>: <span style={{ fontSize: 13, color: 'var(--text-1)', fontWeight: 500 }}>{equipo.cliente_telefono ?? '—'}</span></div>
         </div>
 
         <div style={{ background: 'var(--bg-card)', border: '0.5px solid var(--border-color)', borderRadius: 10, padding: '18px 20px' }}>
           <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 14 }}>Datos del equipo</div>
-          <div style={{ fontSize: 13, marginBottom: 6 }}><span style={{ color: 'var(--text-3)' }}>Tipo: </span>{equipo.tipo_equipo}</div>
-          <div style={{ fontSize: 13, marginBottom: 6 }}><span style={{ color: 'var(--text-3)' }}>Marca/Modelo: </span>{equipo.marca} {equipo.modelo}</div>
-          <div style={{ fontSize: 13, marginBottom: 6 }}><span style={{ color: 'var(--text-3)' }}>N° de serie: </span>{equipo.password_pin ?? '—'}</div>
-          <div style={{ fontSize: 13, marginBottom: 6 }}><span style={{ color: 'var(--text-3)' }}>Accesorios: </span>{equipo.accesorios ?? '—'}</div>
-          <div style={{ fontSize: 13 }}><span style={{ color: 'var(--text-3)' }}>Ingreso: </span>{formatFecha(equipo.fecha_ingreso)}</div>
+          <div style={{ fontSize: 13, marginBottom: 6 }}><span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Tipo</span>: <span style={{ fontSize: 13, color: 'var(--text-1)', fontWeight: 500 }}>{equipo.tipo_equipo}</span></div>
+          <div style={{ fontSize: 13, marginBottom: 6 }}><span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Marca/Modelo</span>: <span style={{ fontSize: 13, color: 'var(--text-1)', fontWeight: 500 }}>{equipo.marca} {equipo.modelo}</span></div>
+          <div style={{ fontSize: 13, marginBottom: 6 }}><span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>N° de serie</span>: <span style={{ fontSize: 13, color: 'var(--text-1)', fontWeight: 500 }}>{equipo.password_pin ?? '—'}</span></div>
+          <div style={{ fontSize: 13, marginBottom: 6 }}><span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Accesorios</span>: <span style={{ fontSize: 13, color: 'var(--text-1)', fontWeight: 500 }}>{equipo.accesorios ?? '—'}</span></div>
+          <div style={{ fontSize: 13 }}><span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Ingreso</span>: <span style={{ fontSize: 13, color: 'var(--text-1)', fontWeight: 500 }}>{formatFecha(equipo.fecha_ingreso)}</span></div>
         </div>
       </div>
 
-      <div style={{ background: 'var(--bg-card)', border: '0.5px solid var(--border-color)', borderRadius: 10, padding: '18px 20px', marginBottom: 16 }}>
+      <div style={{
+        background: 'var(--bg-card)', border: '0.5px solid var(--border-color)',
+        borderLeft: '4px solid var(--primary)',
+        borderRadius: 10, padding: '18px 20px', marginBottom: 16
+      }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <div style={{ fontWeight: 700, fontSize: 13 }}>Diagnóstico y notas
             <div style={{ marginBottom: 14 }}>
@@ -252,22 +265,51 @@ export default function EquipoDetalle() {
       </div>
 
       {usuario.rol === 'tecnico' && (
-        <div style={{ background: 'var(--bg-card)', border: '0.5px solid var(--border-color)', borderRadius: 10, padding: '18px 20px', marginBottom: 16 }}>
-          <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 14 }}>Cambiar estado</div>
+        <div style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-color)',
+          borderRadius: 10, padding: '18px 20px', marginBottom: 16
+        }}>
+          <div style={{
+            fontWeight: 900, fontSize: 11, textTransform: 'uppercase',
+            letterSpacing: '0.08em', marginBottom: 14, color: 'var(--text-3)'
+          }}>Cambiar estado</div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {ESTADOS.map(e => (
-              <button key={e} onClick={() => handleEstado(e)}
-                disabled={e === equipo.estado_actual}
-                style={{
-                  background: e === equipo.estado_actual ? 'var(--primary)' : 'var(--bg-card)',
-                  border: '0.5px solid var(--border-color)', borderRadius: 6,
-                  padding: '7px 14px', fontSize: 12, fontWeight: e === equipo.estado_actual ? 700 : 400,
-                  cursor: e === equipo.estado_actual ? 'default' : 'pointer',
-                  opacity: e === equipo.estado_actual ? 1 : 0.8
-                }}>
-                {e.replace('_', ' ')}
-              </button>
-            ))}
+            {ESTADOS.map(estado => {
+              const cfg = estadoConfig[estado]
+              const isActive = estado === equipo.estado_actual
+              return (
+                <button key={estado} onClick={() => handleEstado(estado)}
+                  disabled={isActive}
+                  style={{
+                    background: isActive ? cfg.bg : 'var(--bg-main)',
+                    border: `1px solid ${isActive ? cfg.border : 'var(--border-color)'}`,
+                    borderRadius: 4, padding: '7px 14px',
+                    fontSize: 10, fontWeight: isActive ? 900 : 700,
+                    letterSpacing: '0.06em', textTransform: 'uppercase',
+                    color: isActive ? cfg.color : 'var(--text-2)',
+                    cursor: isActive ? 'default' : 'pointer',
+                    transition: 'all 0.15s'
+                  }}
+                  onMouseEnter={e => {
+                    if (!isActive) {
+                      e.currentTarget.style.background = cfg.bg
+                      e.currentTarget.style.color = cfg.color
+                      e.currentTarget.style.borderColor = cfg.border
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (!isActive) {
+                      e.currentTarget.style.background = 'var(--bg-main)'
+                      e.currentTarget.style.color = 'var(--text-2)'
+                      e.currentTarget.style.borderColor = 'var(--border-color)'
+                    }
+                  }}
+                >
+                  {cfg.label}
+                </button>
+              )
+            })}
           </div>
         </div>
       )}
@@ -316,30 +358,40 @@ export default function EquipoDetalle() {
         </div>
       )}
 
-      <div style={{ background: 'var(--bg-card)', border: '0.5px solid var(--border-color)', borderRadius: 10, overflow: 'hidden' }}>
-        <div style={{ padding: '14px 20px', borderBottom: '0.5px solid var(--border-color)', fontWeight: 700, fontSize: 13 }}>
-          Historial de cambios
-        </div>
-        {historial.length === 0 ? (
-          <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>Sin historial</div>
-        ) : historial.map(h => (
-          <div key={h.id} style={{
-            padding: '12px 20px', borderBottom: '0.5px solid var(--border-color)',
-            display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'
-          }}>
-            <div>
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--link)' }}>{h.campo_modificado}</span>
-              <span style={{ fontSize: 12, color: 'var(--text-3)', margin: '0 6px' }}>
-                {h.valor_anterior ?? 'vacío'} → {h.valor_nuevo}
-              </span>
-            </div>
-            <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 16 }}>
-              <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{h.usuario_nombre}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{formatFecha(h.fecha_cambio)}</div>
-            </div>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 10, overflow: 'hidden', marginTop: 14 }}>
+          <div style={{ padding: '14px 20px', borderBottom: '0.5px solid var(--border-color)', fontWeight: 700, fontSize: 13 }}>
+            Historial de cambios
           </div>
-        ))}
-      </div>
+          {historial.length === 0 ? (
+            <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>Sin historial</div>
+          ) : historial.map(h => (
+            <div key={h.id} style={{
+              padding: '12px 20px',
+              borderBottom: '1px solid var(--border-color)',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'
+            }}>
+              <div>
+                <span style={{
+                  fontSize: 11, fontWeight: 800, color: 'var(--primary)',
+                  textTransform: 'uppercase', letterSpacing: '0.06em'
+                }}>
+                  {h.campo_modificado.replace(/_/g, ' ')}
+                </span>
+                <span style={{ fontSize: 12, color: 'var(--text-3)', margin: '0 8px' }}>
+                  {h.valor_anterior ?? 'vacío'}
+                </span>
+                <span style={{ fontSize: 12, color: 'var(--text-3)' }}>→</span>
+                <span style={{ fontSize: 12, color: 'var(--text-1)', fontWeight: 600, marginLeft: 8 }}>
+                  {h.valor_nuevo}
+                </span>
+              </div>
+              <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 16 }}>
+                <div style={{ fontSize: 11, color: 'var(--text-2)', fontWeight: 600 }}>{h.usuario_nombre}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{formatFecha(h.fecha_cambio)}</div>
+              </div>
+            </div>
+          ))}
+        </div>
     </div>
   )
 }
