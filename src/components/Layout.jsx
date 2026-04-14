@@ -2,9 +2,11 @@ import { Link } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import BuscadorGlobal from './BuscadorGlobal'
 import { useIsMobile } from '../hooks/useIsMobile'
+import { useDarkMode } from '../hooks/useDarkMode'
 
 export default function Layout({ children }) {
   const isMobile = useIsMobile()
+  const [dark, setDark] = useDarkMode()
 
   return (
     <div style={{ display: 'flex' }}>
@@ -34,6 +36,14 @@ export default function Layout({ children }) {
             </div>
           )}
           <BuscadorGlobal />
+          <button onClick={() => setDark(d => !d)} style={{
+            background: 'none', border: '1px solid #333',
+            borderRadius: 4, padding: '5px 10px',
+            color: '#aaa', fontSize: 14, cursor: 'pointer',
+            marginLeft: 12, flexShrink: 0
+          }} title={dark ? 'Modo claro' : 'Modo oscuro'}>
+            {dark ? '☀' : '☾'}
+          </button>
         </header>
         <main style={{
           flex: 1,

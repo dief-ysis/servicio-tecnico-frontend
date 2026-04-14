@@ -4,6 +4,8 @@
   --primary: #ffcd0d;
   --primary-dark: #e6b800;
   --black: #000000;
+  --overlay: rgba(0,0,0,0.5);
+  --white: #ffffff;
   --text-primary: #111111;
   --text-secondary: #555555;
   --text-muted: #999999;
@@ -24,37 +26,61 @@
   --radius-sm: 3px;
   --radius-md: 6px;
   --radius-lg: 10px;
+  --bg-main: #ffffff;
+  --bg-header: #000000;
+  --bg-card: #ffffff;
+  --bg-table-head: #fafafa;
+  --bg-row-hover: #fafafa;
+  --border-color: #e8e8e8;
+  --text-1: #111111;
+  --text-2: #555555;
+  --text-3: #999999;
+  --input-bg: #ffffff;
+  --input-border: #e0e0e0;
+}
+
+html.dark {
+  --bg-main: #0f0f0f;
+  --bg-header: #000000;
+  --bg-card: #1a1a1a;
+  --bg-table-head: #141414;
+  --bg-row-hover: #222222;
+  --border-color: #2a2a2a;
+  --text-1: #f0f0f0;
+  --text-2: #aaaaaa;
+  --text-3: #666666;
+  --input-bg: #1a1a1a;
+  --input-border: #333333;
+  --surface-card: #1a1a1a;
+  --border: #2a2a2a;
+  --warning-bg: #2a2200;
+  --warning-text: #ffcd0d;
+  --info-bg: #0a1628;
+  --info-text: #6aa3e0;
+  --success-bg: #0a1a08;
+  --success-text: #7a9c59;
+  --danger-bg: #1a0505;
+  --danger-text: #e06060;
 }
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: #ffffff;
-  color: var(--text-primary);
+  background: var(--bg-main);
+  color: var(--text-1);
   font-size: 14px;
   line-height: 1.5;
+  transition: background 0.2s, color 0.2s;
 }
 
 button { cursor: pointer; font-family: inherit; }
 input, select, textarea { font-family: inherit; }
 a { text-decoration: none; color: inherit; }
 
-.tabla-scroll {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.tabla-scroll table {
-  min-width: 600px;
-}
+.tabla-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.tabla-scroll table { min-width: 600px; }
 
 @media (max-width: 768px) {
-  .stat-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-  .filtros-grid {
-    flex-direction: column !important;
-  }
-  .detalle-grid {
-    grid-template-columns: 1fr !important;
-  }
+  .stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .filtros-grid { flex-direction: column !important; }
+  .detalle-grid { grid-template-columns: 1fr !important; }
 }

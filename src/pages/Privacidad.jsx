@@ -4,21 +4,21 @@ export default function Privacidad() {
   const navigate = useNavigate()
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f5f5f3', padding: '40px 20px' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--surface)', padding: '40px 20px' }}>
       <div style={{ maxWidth: 680, margin: '0 auto' }}>
         <div style={{ marginBottom: 24 }}>
           <button onClick={() => navigate(-1)} style={{
-            background: 'none', border: 'none', color: '#334862',
+            background: 'none', border: 'none', color: 'var(--link)',
             fontSize: 12, cursor: 'pointer', padding: 0, fontWeight: 700
           }}>← Volver</button>
         </div>
 
         <div style={{
-          background: '#fff', border: '1px solid #e8e8e8',
+          background: 'var(--white)', border: '1px solid var(--border-color)',
           borderRadius: 8, padding: '36px 40px'
         }}>
           <div style={{
-            background: '#ffcd0d', color: '#000', fontSize: 10,
+            background: 'var(--primary)', color: 'var(--black)', fontSize: 10,
             fontWeight: 900, padding: '4px 10px', borderRadius: 3,
             display: 'inline-block', letterSpacing: '0.1em', marginBottom: 20
           }}>LIGHT SOLUTION</div>
@@ -26,7 +26,7 @@ export default function Privacidad() {
           <h1 style={{ fontSize: 18, fontWeight: 900, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Política de privacidad
           </h1>
-          <p style={{ fontSize: 11, color: '#999', marginBottom: 28 }}>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 28 }}>
             Vigente desde enero 2025 · Ley 19.628 sobre Protección de la Vida Privada
           </p>
 
@@ -85,9 +85,9 @@ function Section({ titulo, children }) {
     <div style={{ marginBottom: 22 }}>
       <div style={{
         fontSize: 11, fontWeight: 900, textTransform: 'uppercase',
-        letterSpacing: '0.08em', marginBottom: 8, color: '#111'
+        letterSpacing: '0.08em', marginBottom: 8, color: 'var(--text-1)'
       }}>{titulo}</div>
-      <div style={{ fontSize: 13, color: '#444', lineHeight: 1.7 }}>
+      <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
         {children}
       </div>
     </div>

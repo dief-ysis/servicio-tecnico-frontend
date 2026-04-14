@@ -1,13 +1,15 @@
 const config = {
-  por_reparar:   { label: 'POR REPARAR',   bg: '#fff8d6', color: '#8a6500', border: '#e6d060' },
-  en_reparacion: { label: 'EN REPARACIÓN', bg: '#e6f0fb', color: '#1a4f8a', border: '#a0c0e8' },
-  reparado:      { label: 'REPARADO',      bg: '#eaf3de', color: '#3b6011', border: '#a8cc80' },
-  irreparable:   { label: 'IRREPARABLE',   bg: '#fce8e8', color: '#8a0000', border: '#e8a0a0' },
-  entregado:     { label: 'ENTREGADO',     bg: '#f0f0f0', color: '#444',    border: '#ccc'    },
+  por_reparar:   { label: 'POR REPARAR',   bg: 'var(--warning-bg)',  color: 'var(--warning-text)',  border: '#e6d060' },
+  en_reparacion: { label: 'EN REPARACIÓN', bg: 'var(--info-bg)',     color: 'var(--info-text)',     border: '#a0c0e8' },
+  reparado:      { label: 'REPARADO',      bg: 'var(--success-bg)',  color: 'var(--success-text)',  border: '#a8cc80' },
+  irreparable:   { label: 'IRREPARABLE',   bg: 'var(--danger-bg)',   color: 'var(--danger-text)',   border: '#e8a0a0' },
+  entregado:     { label: 'ENTREGADO',     bg: 'var(--border-color)',color: 'var(--text-2)',         border: 'var(--border-color)' },
 }
 
 export default function EstadoBadge({ estado }) {
-  const { label, bg, color, border } = config[estado] ?? { label: estado, bg: '#eee', color: '#333', border: '#ccc' }
+  const { label, bg, color, border } = config[estado] ?? {
+    label: estado, bg: 'var(--border-color)', color: 'var(--text-2)', border: 'var(--border-color)'
+  }
   return (
     <span style={{
       background: bg, color, border: `1px solid ${border}`,

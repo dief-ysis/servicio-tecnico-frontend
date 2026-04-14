@@ -14,10 +14,10 @@ const ESTADOS_LABELS = {
 }
 
 const inputStyle = {
-  width: '100%', border: '0.5px solid #ddd', borderRadius: 6,
-  padding: '9px 11px', fontSize: 13, outline: 'none', background: '#fff'
+  width: '100%', border: '0.5px solid var(--input-border)', borderRadius: 6,
+  padding: '9px 11px', fontSize: 13, outline: 'none', background: 'var(--input-bg)'
 }
-const labelStyle = { fontSize: 12, color: '#666', display: 'block', marginBottom: 5 }
+const labelStyle = { fontSize: 12, color: 'var(--text-2)', display: 'block', marginBottom: 5 }
 
 export default function Equipos() {
   const toast = useToast()
@@ -60,15 +60,15 @@ export default function Equipos() {
     <div>
       <div style={{ display: 'flex', gap: 8 }}>
         <button onClick={() => exportarEquipos(equipos)} style={{
-          background: '#fff', border: '1px solid #e0e0e0', borderRadius: 4,
+          background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 4,
           padding: '9px 16px', fontSize: 11, fontWeight: 800,
-          letterSpacing: '0.06em', cursor: 'pointer', color: '#333',
+          letterSpacing: '0.06em', cursor: 'pointer', color: 'var(--text-1)',
           textTransform: 'uppercase'
         }}>
           Exportar Excel
         </button>
         <button onClick={() => setShowModal(true)} style={{
-          background: '#ffcd0d', border: 'none', borderRadius: 4,
+          background: 'var(--primary)', border: 'none', borderRadius: 4,
           padding: '9px 18px', fontSize: 11, fontWeight: 900,
           letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer'
         }}>
@@ -90,7 +90,7 @@ export default function Equipos() {
         </select>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{
-            fontSize: 10, fontWeight: 800, color: '#999',
+            fontSize: 10, fontWeight: 800, color: 'var(--text-3)',
             textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap'
           }}>Desde</span>
           <input
@@ -102,7 +102,7 @@ export default function Equipos() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{
-            fontSize: 10, fontWeight: 800, color: '#999',
+            fontSize: 10, fontWeight: 800, color: 'var(--text-3)',
             textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap'
           }}>Hasta</span>
           <input
@@ -116,9 +116,9 @@ export default function Equipos() {
           <button
             onClick={() => { setFechaDesde(''); setFechaHasta('') }}
             style={{
-              background: 'none', border: '1px solid #ddd', borderRadius: 4,
+              background: 'none', border: '1px solid var(--border)', borderRadius: 4,
               padding: '8px 12px', fontSize: 10, fontWeight: 800,
-              color: '#999', cursor: 'pointer', letterSpacing: '0.06em',
+              color: 'var(--text-3)', cursor: 'pointer', letterSpacing: '0.06em',
               textTransform: 'uppercase', whiteSpace: 'nowrap'
             }}>
             Limpiar fechas
@@ -127,14 +127,14 @@ export default function Equipos() {
       </div>
 
       <div className="tabla-scroll">
-        <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: 10, overflow: 'hidden' }}>
+        <div style={{ background: 'var(--bg-card)', border: '0.5px solid var(--border-color)', borderRadius: 10, overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ background: '#fafafa' }}>
+            <tr style={{ background: 'var(--bg-table-head)' }}>
               {['N° Ingreso', 'Cliente', 'Equipo', 'Falla', 'Estado', 'Ingreso', ''].map(h => (
                 <th key={h} style={{
                   padding: '9px 16px', textAlign: 'left', fontSize: 11,
-                  color: '#888', fontWeight: 600, borderBottom: '0.5px solid #eee',
+                  color: 'var(--text-3)', fontWeight: 600, borderBottom: '0.5px solid var(--border-color)',
                   letterSpacing: '0.05em'
                 }}>{h}</th>
               ))}
@@ -144,39 +144,39 @@ export default function Equipos() {
             {loading ? (
               <SkeletonTable rows={5} cols={7} />
             ) : equipos.length === 0 ? (
-              <tr><td colSpan={7} style={{ padding: 32, textAlign: 'center', color: '#888' }}>No hay equipos</td></tr>
+              <tr><td colSpan={7} style={{ padding: 32, textAlign: 'center', color: 'var(--text-3)' }}>No hay equipos</td></tr>
             ) : equipos.map(eq => (
               <tr key={eq.id}
-                onMouseEnter={e => e.currentTarget.style.background = '#fafafa'}
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-row-hover)'}
                 onMouseLeave={e => e.currentTarget.style.background = ''}
                 style={{ cursor: 'pointer' }}
               >
-                <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontFamily: 'monospace', fontSize: 12, color: '#334862', borderBottom: '0.5px solid #f5f5f5' }}>
+                <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontFamily: 'monospace', fontSize: 12, color: 'var(--link)', borderBottom: '0.5px solid var(--border-color)' }}>
                   {eq.numero_ingreso}
                 </td>
-                <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontSize: 13, borderBottom: '0.5px solid #f5f5f5' }}>
+                <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontSize: 13, borderBottom: '0.5px solid var(--border-color)' }}>
                   <div>{eq.cliente_nombre}</div>
-                  <div style={{ fontSize: 11, color: '#aaa' }}>{eq.cliente_telefono}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{eq.cliente_telefono}</div>
                 </td>
-                <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontSize: 13, borderBottom: '0.5px solid #f5f5f5' }}>
+                <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontSize: 13, borderBottom: '0.5px solid var(--border-color)' }}>
                   <div>{eq.tipo_equipo}</div>
-                  <div style={{ fontSize: 11, color: '#aaa' }}>{eq.marca} {eq.modelo}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{eq.marca} {eq.modelo}</div>
                 </td>
-                <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontSize: 12, color: '#666', borderBottom: '0.5px solid #f5f5f5', maxWidth: 160 }}>
+                <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontSize: 12, color: 'var(--text-2)', borderBottom: '0.5px solid var(--border-color)', maxWidth: 160 }}>
                   <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {eq.falla_reportada ?? '—'}
                   </div>
                 </td>
-                <td style={{ padding: '11px 16px', borderBottom: '0.5px solid #f5f5f5' }}>
+                <td style={{ padding: '11px 16px', borderBottom: '0.5px solid var(--border-color)' }}>
                   <EstadoBadge estado={eq.estado_actual} />
                 </td>
-                <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontSize: 12, color: '#888', borderBottom: '0.5px solid #f5f5f5' }}>
+                <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontSize: 12, color: 'var(--text-3)', borderBottom: '0.5px solid var(--border-color)' }}>
                   {formatFecha(eq.fecha_ingreso)}
                 </td>
-                <td style={{ padding: '11px 16px', borderBottom: '0.5px solid #f5f5f5' }}>
+                <td style={{ padding: '11px 16px', borderBottom: '0.5px solid var(--border-color)' }}>
                   <button onClick={() => navigate(`/equipos/${eq.id}`)} style={{
-                    background: 'none', border: '0.5px solid #ddd', borderRadius: 5,
-                    padding: '4px 10px', fontSize: 11, color: '#334862', cursor: 'pointer'
+                    background: 'none', border: '0.5px solid var(--border)', borderRadius: 5,
+                    padding: '4px 10px', fontSize: 11, color: 'var(--link)', cursor: 'pointer'
                   }}>
                     Ver →
                   </button>
@@ -243,11 +243,11 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
   }
 
   const overlayStyle = {
-    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+    position: 'fixed', inset: 0, background: 'var(--overlay)',
     display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999
   }
   const modalStyle = {
-    background: '#fff', borderRadius: 12, width: '100%', maxWidth: 500,
+    background: 'var(--bg-card)', borderRadius: 12, width: '100%', maxWidth: 500,
     maxHeight: '90vh', overflow: 'auto', padding: '28px 28px 24px'
   }
 
@@ -258,7 +258,7 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
           <h2 style={{ fontSize: 16, fontWeight: 800 }}>
             {step === 1 ? 'Paso 1 — Cliente' : 'Paso 2 — Equipo'}
           </h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#888' }}>×</button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--text-3)' }}>×</button>
         </div>
 
         {step === 1 && (
@@ -274,28 +274,28 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
                   autoFocus
                 />
                 {clientes.length > 0 && (
-                  <div style={{ border: '0.5px solid #ddd', borderRadius: 6, marginTop: 4, overflow: 'hidden' }}>
+                  <div style={{ border: '0.5px solid var(--border)', borderRadius: 6, marginTop: 4, overflow: 'hidden' }}>
                     {clientes.map(c => (
                       <div key={c.id} onClick={() => { setClienteSeleccionado(c); setClientes([]) }}
                         style={{
                           padding: '10px 12px', cursor: 'pointer', fontSize: 13,
-                          borderBottom: '0.5px solid #f0f0f0',
-                          background: clienteSeleccionado?.id === c.id ? '#fff8d6' : '#fff'
+                          borderBottom: '0.5px solid var(--border)',
+                          background: clienteSeleccionado?.id === c.id ? 'var(--warning-bg)' : 'var(--bg-card)'
                         }}>
                         <div style={{ fontWeight: 600 }}>{c.nombre}</div>
-                        <div style={{ fontSize: 11, color: '#888' }}>{c.telefono}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{c.telefono}</div>
                       </div>
                     ))}
                   </div>
                 )}
                 {clienteSeleccionado && (
-                  <div style={{ background: '#eaf3de', borderRadius: 6, padding: '10px 12px', marginTop: 8, fontSize: 13 }}>
+                  <div style={{ background: 'var(--success-bg)', borderRadius: 6, padding: '10px 12px', marginTop: 8, fontSize: 13, color: 'var(--success-text)' }}>
                     ✓ <strong>{clienteSeleccionado.nombre}</strong> — {clienteSeleccionado.telefono}
                   </div>
                 )}
                 <button onClick={() => setModoNuevoCliente(true)} style={{
-                  marginTop: 14, background: 'none', border: '0.5px solid #ddd',
-                  borderRadius: 6, padding: '8px 14px', fontSize: 12, cursor: 'pointer', color: '#334862'
+                  marginTop: 14, background: 'none', border: '0.5px solid var(--border)',
+                  borderRadius: 6, padding: '8px 14px', fontSize: 12, cursor: 'pointer', color: 'var(--link)'
                 }}>
                   + Registrar cliente nuevo
                 </button>
@@ -315,21 +315,21 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
                   <input value={nuevoCliente.email} onChange={e => setNuevoCliente(p => ({ ...p, email: e.target.value }))} style={inputStyle} />
                 </div>
                 <button onClick={() => setModoNuevoCliente(false)} style={{
-                  background: 'none', border: 'none', fontSize: 12, color: '#888', cursor: 'pointer', padding: 0
+                  background: 'none', border: 'none', fontSize: 12, color: 'var(--text-3)', cursor: 'pointer', padding: 0
                 }}>
                   ← Buscar cliente existente
                 </button>
               </>
             )}
 
-            {error && <div style={{ color: '#8a0000', fontSize: 12, marginTop: 10 }}>{error}</div>}
+            {error && <div style={{ color: 'var(--danger-text)', fontSize: 12, marginTop: 10 }}>{error}</div>}
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
               <button
                 onClick={() => { setError(''); setStep(2) }}
                 disabled={!clienteSeleccionado && !modoNuevoCliente}
                 style={{
-                  background: '#ffcd0d', border: 'none', borderRadius: 6,
+                  background: 'var(--primary)', border: 'none', borderRadius: 6,
                   padding: '9px 20px', fontWeight: 700, fontSize: 13, cursor: 'pointer',
                   opacity: (!clienteSeleccionado && !modoNuevoCliente) ? 0.4 : 1
                 }}>
@@ -376,15 +376,15 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
                 rows={2} style={{ ...inputStyle, resize: 'vertical' }} />
             </div>
 
-            {error && <div style={{ color: '#8a0000', fontSize: 12, marginTop: 4 }}>{error}</div>}
+            {error && <div style={{ color: 'var(--danger-text)', fontSize: 12, marginTop: 4 }}>{error}</div>}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20 }}>
               <button onClick={() => setStep(1)} style={{
-                background: 'none', border: '0.5px solid #ddd', borderRadius: 6,
+                background: 'none', border: '0.5px solid var(--border)', borderRadius: 6,
                 padding: '9px 16px', fontSize: 13, cursor: 'pointer'
               }}>← Volver</button>
               <button onClick={handleSubmit} disabled={loading} style={{
-                background: '#ffcd0d', border: 'none', borderRadius: 6,
+                background: 'var(--primary)', border: 'none', borderRadius: 6,
                 padding: '9px 20px', fontWeight: 700, fontSize: 13, cursor: 'pointer',
                 opacity: loading ? 0.6 : 1
               }}>

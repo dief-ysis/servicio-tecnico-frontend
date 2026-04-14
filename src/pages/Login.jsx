@@ -30,14 +30,14 @@ export default function Login() {
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#000',
+      minHeight: '100vh', background: 'var(--black)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       padding: '20px 16px'
     }}>
       <div style={{ marginBottom: 32, textAlign: 'center' }}>
         <div style={{
-          background: '#fff', borderRadius: 6,
+          background: 'var(--white)', borderRadius: 6,
           padding: '10px 24px', display: 'inline-block'
         }}>
           <img
@@ -49,12 +49,12 @@ export default function Login() {
       </div>
 
       <div style={{
-        background: '#111', border: '0.5px solid #2a2a2a',
+        background: 'var(--bg-card)', border: '0.5px solid var(--border)',
         borderRadius: 10, padding: isMobile ? '28px 20px' : '40px 36px',
         width: '100%', maxWidth: 380
       }}>
         <div style={{
-          fontSize: 10, color: '#555', textAlign: 'center',
+          fontSize: 10, color: 'var(--text-secondary)', textAlign: 'center',
           textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 28
         }}>
           Servicio Técnico — Acceso interno
@@ -63,7 +63,7 @@ export default function Login() {
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 16 }}>
             <label style={{
-              color: '#666', fontSize: 10, display: 'block',
+              color: 'var(--text-secondary)', fontSize: 10, display: 'block',
               marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800
             }}>Email</label>
             <input
@@ -71,16 +71,16 @@ export default function Login() {
               onChange={e => setEmail(e.target.value)}
               required autoFocus
               style={{
-                width: '100%', background: '#1a1a1a',
-                border: '1px solid #333', borderRadius: 4,
-                padding: '11px 12px', color: '#fff', fontSize: 14, outline: 'none'
+                width: '100%', background: 'var(--input-bg)',
+                border: '1px solid var(--input-border)', borderRadius: 4,
+                padding: '11px 12px', color: 'var(--white)', fontSize: 14, outline: 'none'
               }}
             />
           </div>
 
           <div style={{ marginBottom: 24 }}>
             <label style={{
-              color: '#666', fontSize: 10, display: 'block',
+              color: 'var(--text-secondary)', fontSize: 10, display: 'block',
               marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800
             }}>Contraseña</label>
             <input
@@ -88,16 +88,16 @@ export default function Login() {
               onChange={e => setPassword(e.target.value)}
               required
               style={{
-                width: '100%', background: '#1a1a1a',
-                border: '1px solid #333', borderRadius: 4,
-                padding: '11px 12px', color: '#fff', fontSize: 14, outline: 'none'
+                width: '100%', background: 'var(--input-bg)',
+                border: '1px solid var(--input-border)', borderRadius: 4,
+                padding: '11px 12px', color: 'var(--white)', fontSize: 14, outline: 'none'
               }}
             />
           </div>
 
           {error && (
             <div style={{
-              background: '#fce8e8', color: '#8a0000', fontSize: 12,
+              background: 'var(--danger-bg)', color: 'var(--danger-text)', fontSize: 12,
               padding: '10px 12px', borderRadius: 4, marginBottom: 16,
               fontWeight: 600
             }}>
@@ -106,7 +106,7 @@ export default function Login() {
           )}
 
           <button type="submit" disabled={loading} style={{
-            width: '100%', background: '#ffcd0d', color: '#000',
+            width: '100%', background: 'var(--primary)', color: 'var(--black)',
             border: 'none', borderRadius: 4, padding: '13px',
             fontSize: 12, fontWeight: 900, letterSpacing: '0.1em',
             textTransform: 'uppercase', cursor: 'pointer',
