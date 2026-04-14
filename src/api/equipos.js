@@ -8,6 +8,8 @@ export const cambiarEstado = (id, estado) => client.patch(`/equipos/${id}/estado
 export const getHistorial = (id) => client.get(`/equipos/${id}/historial`)
 export const getEstadisticas = (periodo) => client.get('/equipos/estadisticas', { params: { periodo } })
 export const getSinMovimiento = (dias = 7) => client.get('/equipos/sin-movimiento', { params: { dias } })
+export const buscarClientesBsale = (q) => client.get('/bsale/clientes', { params: { q } })
+export const generarDocumentoBsale = (data) => client.post('/bsale/documento', data)
 export const subirFoto = (id, file) => {
   const formData = new FormData()
   formData.append('foto', file)

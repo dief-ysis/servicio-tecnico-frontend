@@ -7,6 +7,7 @@ import { SkeletonTable } from '../components/Skeleton'
 import { useToast } from '../components/Toast'
 import { exportarEquipos } from '../utils/exportExcel'
 import { useIsMobile } from '../hooks/useIsMobile'
+import { buscarClientesBsale } from '../../api/equipos'
 
 const ESTADOS = ['por_reparar', 'en_reparacion', 'espera_repuesto', 'reparado', 'irreparable', 'entregado']
 const ESTADOS_LABELS = {
@@ -283,6 +284,7 @@ export default function Equipos() {
 
 function ModalNuevoEquipo({ onClose, onCreado }) {
   const toast = useToast()
+  
   const { isMobile } = useIsMobile()
   const [step, setStep] = useState(1)
   const [clientes, setClientes] = useState([])
@@ -296,6 +298,8 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [clientesBsale, setClientesBsale] = useState([])
+  const [busquedaBsale, setBusquedaBsale] = useState(false)
 
   useEffect(() => {
     if (buscarCliente.length >= 2) {
@@ -399,6 +403,77 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
                 }}>
                   + Registrar cliente nuevo
                 </button>
+
+                <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--border-color)' }}>
+                  <div style={{
+                    fontSize: 9, fontWeight: 900, color: 'var(--text-3)',
+                    textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10
+                  }}>
+                    Buscar en Bsale
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input
+                      placeholder="Nombre del cliente en Bsale..."
+                      onChange={async (e) => {
+                        const q = e.target.value
+                        if (q.length >= 2) {
+                          setBusquedaBsale(true)
+                          try {
+                            const r = await buscarClientesBsale(q)
+                            setClientesBsale(r.data)
+                          } catch {
+                            setClientesBsale([])
+                          } finally {
+                            setBusquedaBsale(false)
+                          }
+                        } else {
+                          setClientesBsale([])
+                        }
+                      }}
+                      style={inputStyle}
+                    />
+                  </div>
+
+                  {busquedaBsale && (
+                    <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}>Buscando...</div>
+                  )}
+
+                  {clientesBsale.length > 0 && (
+                    <div style={{
+                      border: '1px solid var(--border-color)', borderRadius: 6,
+                      marginTop: 6, overflow: 'hidden'
+                    }}>
+                      {clientesBsale.map(c => (
+                        <div key={c.id}
+                          onClick={async () => {
+                            const nombre = `${c.firstName ?? ''} ${c.lastName ?? ''}`.trim() || c.company
+                            const r = await crearCliente({
+                              nombre,
+                              telefono: c.phone ?? '',
+                              email: c.email ?? ''
+                            })
+                            setClienteSeleccionado(r.data)
+                            setClientesBsale([])
+                          }}
+                          style={{
+                            padding: '10px 12px', cursor: 'pointer', fontSize: 13,
+                            borderBottom: '1px solid var(--border-color)',
+                            background: 'var(--bg-card)'
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-row-hover)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-card)'}
+                        >
+                          <div style={{ fontWeight: 600, color: 'var(--text-1)' }}>
+                            {`${c.firstName ?? ''} ${c.lastName ?? ''}`.trim() || c.company}
+                          </div>
+                          <div style={{ fontSize: 11, color: 'var(--text-3)' }}>
+                            {c.code && `RUT: ${c.code}`} {c.phone && `· ${c.phone}`}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
               <>

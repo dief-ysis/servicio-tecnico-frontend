@@ -5,6 +5,7 @@ import EstadoBadge from '../components/EstadoBadge'
 import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../components/Toast'
 import { useIsMobile } from '../hooks/useIsMobile'
+import { generarDocumentoBsale } from '../api/equipos'
 
 const inputStyle = {
   width: '100%', border: '1px solid var(--input-border)', borderRadius: 4,
@@ -37,6 +38,8 @@ export default function EquipoDetalle() {
   const [guardando, setGuardando] = useState(false)
   const [estadoPendiente, setEstadoPendiente] = useState(null)
   const [subiendo, setSubiendo] = useState(false)
+  const [generandoDoc, setGenerandoDoc] = useState(false)
+  const [docGenerado, setDocGenerado] = useState(null)
 
   const cargar = () => {
     Promise.all([getEquipo(id), getHistorial(id)]).then(([eq, hist]) => {
@@ -92,6 +95,29 @@ export default function EquipoDetalle() {
       setSubiendo(false)
     }
   }
+
+  const handleGenerarDocumento = async () => {
+  if (!equipo.costo_reparacion || equipo.costo_reparacion <= 0) {
+    toast('Debes ingresar el costo de reparación primero', 'error')
+    return
+  }
+  setGenerandoDoc(true)
+  try {
+    const res = await generarDocumentoBsale({
+      equipoId: id,
+      clienteBsaleId: equipo.cliente_bsale_id,
+      monto: equipo.costo_reparacion,
+      descripcion: `Reparación ${equipo.tipo_equipo} ${equipo.marca} ${equipo.modelo} - ${equipo.falla_reportada}`
+    })
+    setDocGenerado(res.data)
+    toast('Documento generado en Bsale')
+    cargar()
+  } catch (err) {
+    toast(err.response?.data?.error ?? 'Error al generar documento', 'error')
+  } finally {
+    setGenerandoDoc(false)
+  }
+}
 
   const formatFecha = (iso) => iso ? new Date(iso).toLocaleString('es-CL', {
     day: '2-digit', month: 'short', year: 'numeric',
