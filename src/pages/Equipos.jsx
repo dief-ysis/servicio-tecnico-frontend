@@ -27,7 +27,7 @@ const labelStyle = { fontSize: 12, color: 'var(--text-2)', display: 'block', mar
 
 export default function Equipos() {
   const toast = useToast()
-  const { isMobile } = useIsMobile()
+  const { isMobile, isSmall } = useIsMobile()
   const [equipos, setEquipos] = useState([])
   const [loading, setLoading] = useState(true)
   const [filtroEstado, setFiltroEstado] = useState('')
