@@ -2,20 +2,25 @@ import { useState, useEffect, useCallback } from 'react'
 import { getClientes, crearCliente, actualizarCliente } from '../api/clientes'
 import { getEquipos } from '../api/equipos'
 import EstadoBadge from '../components/EstadoBadge'
-import { SkeletonTable } from '../components/Skeleton'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../components/Toast'
 import { useIsMobile } from '../hooks/useIsMobile'
 
 const inputStyle = {
-  width: '100%', border: '0.5px solid var(--input-border)', borderRadius: 6,
-  padding: '9px 11px', fontSize: 13, outline: 'none', background: 'var(--input-bg)'
+  width: '100%', border: '1px solid var(--input-border)', borderRadius: 4,
+  padding: '9px 11px', fontSize: 13, outline: 'none',
+  background: 'var(--input-bg)', color: 'var(--text-1)'
 }
-const labelStyle = { fontSize: 12, color: 'var(--text-2)', display: 'block', marginBottom: 5 }
+
+const labelStyle = {
+  fontSize: 11, fontWeight: 700, color: 'var(--text-2)',
+  display: 'block', marginBottom: 5,
+  textTransform: 'uppercase', letterSpacing: '0.06em'
+}
 
 export default function Clientes() {
+  const { isMobile } = useIsMobile()
   const toast = useToast()
-  const isMobile = useIsMobile()
   const [clientes, setClientes] = useState([])
   const [buscar, setBuscar] = useState('')
   const [loading, setLoading] = useState(true)
@@ -34,11 +39,18 @@ export default function Clientes() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-1)' }}>Clientes</h1>
+      <div style={{
+        display: 'flex', justifyContent: 'space-between',
+        alignItems: 'center', marginBottom: 24
+      }}>
+        <h1 style={{
+          fontSize: isMobile ? 18 : 20, fontWeight: 900,
+          color: 'var(--text-1)', textTransform: 'uppercase', letterSpacing: '0.05em'
+        }}>Clientes</h1>
         <button onClick={() => { setClienteEditando(null); setShowModal(true) }} style={{
-          background: 'var(--primary)', border: 'none', borderRadius: 6,
-          padding: '9px 18px', fontSize: 13, fontWeight: 700, cursor: 'pointer', color: 'var(--black)'
+          background: '#ffcd0d', border: 'none', borderRadius: 4,
+          padding: '9px 18px', fontSize: 11, fontWeight: 900,
+          letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer', color: '#000'
         }}>
           + Nuevo cliente
         </button>
@@ -50,111 +62,102 @@ export default function Clientes() {
         style={{ ...inputStyle, maxWidth: 320, marginBottom: 18 }}
       />
 
-      {isMobile ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {loading ? (
-            <div style={{ color: 'var(--text-3)', fontSize: 13, padding: 16 }}>Cargando...</div>
-          ) : clientes.length === 0 ? (
-            <div style={{ color: 'var(--text-3)', fontSize: 13, padding: 16, textAlign: 'center' }}>
-              No hay clientes
-            </div>
-          ) : clientes.map(c => (
-            <div key={c.id}
-              style={{
-                background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-                borderRadius: 8, padding: '14px 16px',
+      <div style={{
+        background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+        borderRadius: 8, overflow: 'hidden'
+      }}>
+        {loading ? (
+          <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>
+            Cargando...
+          </div>
+        ) : clientes.length === 0 ? (
+          <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-3)', fontSize: 13 }}>
+            No hay clientes
+          </div>
+        ) : isMobile ? (
+          <div>
+            {clientes.map((c, i) => (
+              <div key={c.id} style={{
+                padding: '14px 16px',
+                borderBottom: i < clientes.length - 1 ? '1px solid var(--border-color)' : 'none',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-              }}
-            >
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-1)', marginBottom: 3 }}>
-                  {c.nombre}
+              }}>
+                <div onClick={() => setClienteDetalle(c)} style={{ flex: 1, cursor: 'pointer' }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-1)', marginBottom: 2 }}>
+                    {c.nombre}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--text-2)' }}>{c.telefono ?? '—'}</div>
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--text-2)' }}>{c.telefono ?? '—'}</div>
-                {c.email && <div style={{ fontSize: 11, color: 'var(--link)' }}>{c.email}</div>}
+                <button onClick={() => { setClienteEditando(c); setShowModal(true) }} style={{
+                  background: 'none', border: '1px solid var(--border-color)',
+                  borderRadius: 4, padding: '6px 12px', fontSize: 11,
+                  color: 'var(--text-2)', cursor: 'pointer', marginLeft: 8
+                }}>Editar</button>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
-                <button
-                  onClick={() => setClienteDetalle(c)}
-                  style={{
-                    background: 'none', border: '1px solid var(--border-color)',
-                    borderRadius: 4, padding: '4px 10px', fontSize: 11,
-                    color: 'var(--link)', cursor: 'pointer'
-                  }}>
-                  Ver
-                </button>
-                <button
-                  onClick={() => { setClienteEditando(c); setShowModal(true) }}
-                  style={{
-                    background: 'none', border: '1px solid var(--border-color)',
-                    borderRadius: 4, padding: '4px 10px', fontSize: 11,
-                    color: 'var(--text-2)', cursor: 'pointer'
-                  }}>
-                  Editar
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="tabla-scroll">
-          <div style={{ background: 'var(--bg-card)', border: '0.5px solid var(--border-color)', borderRadius: 10, overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            ))}
+          </div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--bg-table-head)' }}>
                 {['Nombre', 'Teléfono', 'Email', 'Registrado', ''].map(h => (
                   <th key={h} style={{
-                    padding: '9px 16px', textAlign: 'left', fontSize: 11,
-                    color: 'var(--text-3)', fontWeight: 600, borderBottom: '0.5px solid var(--border-color)',
-                    letterSpacing: '0.05em'
+                    padding: '9px 16px', textAlign: 'left', fontSize: 10,
+                    color: 'var(--text-3)', fontWeight: 800,
+                    borderBottom: '1px solid var(--border-color)',
+                    letterSpacing: '0.1em', textTransform: 'uppercase'
                   }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {loading ? (
-                <SkeletonTable rows={5} cols={5} />
-              ) : clientes.length === 0 ? (
-                <tr><td colSpan={5} style={{ padding: 32, textAlign: 'center', color: 'var(--text-3)' }}>No hay clientes</td></tr>
-              ) : clientes.map(c => (
+              {clientes.map(c => (
                 <tr key={c.id}
                   onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-row-hover)'}
                   onMouseLeave={e => e.currentTarget.style.background = ''}
                   style={{ cursor: 'pointer' }}
                 >
-                  <td onClick={() => setClienteDetalle(c)} style={{ padding: '11px 16px', fontSize: 13, fontWeight: 600, borderBottom: '0.5px solid var(--border-color)' }}>
-                    {c.nombre}
-                  </td>
-                  <td onClick={() => setClienteDetalle(c)} style={{ padding: '11px 16px', fontSize: 13, borderBottom: '0.5px solid var(--border-color)' }}>
-                    {c.telefono ?? '—'}
-                  </td>
-                  <td onClick={() => setClienteDetalle(c)} style={{ padding: '11px 16px', fontSize: 13, color: 'var(--link)', borderBottom: '0.5px solid var(--border-color)' }}>
-                    {c.email ?? '—'}
-                  </td>
-                  <td onClick={() => setClienteDetalle(c)} style={{ padding: '11px 16px', fontSize: 12, color: 'var(--text-3)', borderBottom: '0.5px solid var(--border-color)' }}>
+                  <td onClick={() => setClienteDetalle(c)} style={{
+                    padding: '11px 16px', fontSize: 13, fontWeight: 600,
+                    color: 'var(--text-1)', borderBottom: '1px solid var(--border-color)'
+                  }}>{c.nombre}</td>
+                  <td onClick={() => setClienteDetalle(c)} style={{
+                    padding: '11px 16px', fontSize: 13,
+                    color: 'var(--text-2)', borderBottom: '1px solid var(--border-color)'
+                  }}>{c.telefono ?? '—'}</td>
+                  <td onClick={() => setClienteDetalle(c)} style={{
+                    padding: '11px 16px', fontSize: 13,
+                    color: 'var(--link)', borderBottom: '1px solid var(--border-color)'
+                  }}>{c.email ?? '—'}</td>
+                  <td onClick={() => setClienteDetalle(c)} style={{
+                    padding: '11px 16px', fontSize: 12,
+                    color: 'var(--text-3)', borderBottom: '1px solid var(--border-color)'
+                  }}>
                     {new Date(c.creado_en).toLocaleDateString('es-CL')}
                   </td>
-                  <td style={{ padding: '11px 16px', borderBottom: '0.5px solid var(--border-color)' }}>
+                  <td style={{ padding: '11px 16px', borderBottom: '1px solid var(--border-color)' }}>
                     <button onClick={() => { setClienteEditando(c); setShowModal(true) }} style={{
-                      background: 'none', border: '0.5px solid var(--border)', borderRadius: 5,
-                      padding: '4px 10px', fontSize: 11, color: 'var(--link)', cursor: 'pointer'
-                    }}>
-                      Editar
-                    </button>
+                      background: 'none', border: '1px solid var(--border-color)',
+                      borderRadius: 4, padding: '4px 12px', fontSize: 11,
+                      color: 'var(--text-2)', cursor: 'pointer'
+                    }}>Editar</button>
                   </td>
                 </tr>
               ))}
             </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+          </table>
+        )}
+      </div>
 
       {showModal && (
         <ModalCliente
           cliente={clienteEditando}
           onClose={() => setShowModal(false)}
-          onGuardado={() => { setShowModal(false); cargar() }}
+          onGuardado={() => {
+            setShowModal(false)
+            toast(clienteEditando ? 'Cliente actualizado' : 'Cliente registrado correctamente')
+            cargar()
+          }}
         />
       )}
 
@@ -169,8 +172,6 @@ export default function Clientes() {
 }
 
 function ModalCliente({ cliente, onClose, onGuardado }) {
-  const toast = useToast()
-  const isMobile = useIsMobile()
   const [form, setForm] = useState({
     nombre: cliente?.nombre ?? '',
     telefono: cliente?.telefono ?? '',
@@ -188,7 +189,6 @@ function ModalCliente({ cliente, onClose, onGuardado }) {
       } else {
         await crearCliente(form)
       }
-      toast(cliente ? 'Cliente actualizado' : 'Cliente registrado correctamente')
       onGuardado()
     } catch (err) {
       setError(err.response?.data?.error ?? 'Error al guardar')
@@ -199,25 +199,26 @@ function ModalCliente({ cliente, onClose, onGuardado }) {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0,
-      background: isMobile ? 'var(--bg-main)' : 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: isMobile ? 'flex-start' : 'center',
-      justifyContent: 'center',
-      zIndex: 999,
-      overflowY: isMobile ? 'auto' : 'hidden'
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      zIndex: 999, padding: 20
     }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
-        background: 'var(--white)', borderRadius: isMobile ? 0 : 12, width: '100%',
-        maxWidth: isMobile ? '100%' : 420, height: isMobile ? '100%' : 'auto',
-        maxHeight: isMobile ? '100%' : '90vh', padding: isMobile ? '24px 20px' : '28px 28px 24px',
-        margin: isMobile ? 0 : 'auto', overflow: 'auto'
+        background: 'var(--bg-card)', borderRadius: 10,
+        width: '100%', maxWidth: 420, padding: '28px 28px 24px',
+        color: 'var(--text-1)'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 800 }}>
+        <div style={{
+          display: 'flex', justifyContent: 'space-between',
+          alignItems: 'center', marginBottom: 20
+        }}>
+          <h2 style={{ fontSize: 14, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             {cliente ? 'Editar cliente' : 'Nuevo cliente'}
           </h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--text-muted)' }}>×</button>
+          <button onClick={onClose} style={{
+            background: 'none', border: 'none', fontSize: 20,
+            cursor: 'pointer', color: 'var(--text-3)'
+          }}>×</button>
         </div>
 
         <div style={{ marginBottom: 14 }}>
@@ -240,13 +241,15 @@ function ModalCliente({ cliente, onClose, onGuardado }) {
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           <button onClick={onClose} style={{
-            background: 'none', border: '0.5px solid var(--border)', borderRadius: 6,
-            padding: '9px 16px', fontSize: 13, cursor: 'pointer'
+            background: 'none', border: '1px solid var(--border-color)',
+            borderRadius: 4, padding: '9px 16px', fontSize: 11,
+            fontWeight: 700, cursor: 'pointer', color: 'var(--text-1)'
           }}>Cancelar</button>
           <button onClick={handleSubmit} disabled={loading} style={{
-            background: 'var(--primary)', border: 'none', borderRadius: 6,
-            padding: '9px 20px', fontWeight: 700, fontSize: 13, cursor: 'pointer', color: 'var(--black)',
-            opacity: loading ? 0.6 : 1
+            background: '#ffcd0d', border: 'none', borderRadius: 4,
+            padding: '9px 20px', fontWeight: 900, fontSize: 11,
+            letterSpacing: '0.06em', textTransform: 'uppercase',
+            cursor: 'pointer', opacity: loading ? 0.6 : 1, color: '#000'
           }}>
             {loading ? 'Guardando...' : 'Guardar'}
           </button>
@@ -259,40 +262,53 @@ function ModalCliente({ cliente, onClose, onGuardado }) {
 function ModalDetalleCliente({ cliente, onClose }) {
   const [equipos, setEquipos] = useState([])
   const [loading, setLoading] = useState(true)
-  const isMobile = useIsMobile()
   const navigate = useNavigate()
 
   useEffect(() => {
-    getEquipos({ cliente_id: cliente.id }).then(r => setEquipos(r.data)).finally(() => setLoading(false))
+    getEquipos({ cliente_id: cliente.id })
+      .then(r => setEquipos(r.data))
+      .finally(() => setLoading(false))
   }, [cliente.id])
 
   return (
     <div style={{
-      position: 'fixed', inset: 0,
-      background: isMobile ? 'var(--bg-main)' : 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: isMobile ? 'flex-start' : 'center',
-      justifyContent: 'center',
-      zIndex: 999,
-      overflowY: isMobile ? 'auto' : 'hidden'
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      zIndex: 999, padding: 20
     }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
-        background: 'var(--white)', borderRadius: isMobile ? 0 : 12, width: '100%',
-        maxWidth: isMobile ? '100%' : 520, height: isMobile ? '100%' : 'auto',
-        maxHeight: isMobile ? '100%' : '90vh', padding: isMobile ? '24px 20px' : '28px 28px 24px',
-        margin: isMobile ? 0 : 'auto', overflow: 'auto'
+        background: 'var(--bg-card)', borderRadius: 10,
+        width: '100%', maxWidth: 560,
+        maxHeight: '80vh', overflow: 'auto',
+        padding: '28px 28px 24px', color: 'var(--text-1)'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 800 }}>{cliente.nombre}</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--text-muted)' }}>×</button>
+        <div style={{
+          display: 'flex', justifyContent: 'space-between',
+          alignItems: 'flex-start', marginBottom: 20
+        }}>
+          <div>
+            <h2 style={{ fontSize: 16, fontWeight: 900, color: 'var(--text-1)', marginBottom: 6 }}>
+              {cliente.nombre}
+            </h2>
+            <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 2 }}>
+              {cliente.telefono && `Tel: ${cliente.telefono}`}
+            </div>
+            {cliente.email && (
+              <div style={{ fontSize: 13, color: 'var(--link)' }}>{cliente.email}</div>
+            )}
+          </div>
+          <button onClick={onClose} style={{
+            background: 'none', border: 'none', fontSize: 20,
+            cursor: 'pointer', color: 'var(--text-3)', marginLeft: 16
+          }}>×</button>
         </div>
 
-        <div style={{ marginBottom: 20, fontSize: 13, color: 'var(--text-2)' }}>
-          {cliente.telefono && <div style={{ marginBottom: 4 }}>Tel: {cliente.telefono}</div>}
-          {cliente.email && <div>Email: {cliente.email}</div>}
-        </div>
-
-        <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 12 }}>
+        <div style={{
+          fontSize: 10, fontWeight: 900, textTransform: 'uppercase',
+          letterSpacing: '0.1em', color: 'var(--text-3)',
+          marginBottom: 12, paddingBottom: 8,
+          borderBottom: '1px solid var(--border-color)'
+        }}>
           Historial de equipos ({equipos.length})
         </div>
 
@@ -304,23 +320,35 @@ function ModalDetalleCliente({ cliente, onClose }) {
           <div key={eq.id}
             onClick={() => { onClose(); navigate(`/equipos/${eq.id}`) }}
             style={{
-              border: '0.5px solid var(--border-color)', borderRadius: 8, padding: '12px 14px',
-              marginBottom: 8, cursor: 'pointer', transition: 'background 0.1s'
+              border: '1px solid var(--border-color)', borderRadius: 6,
+              padding: '12px 14px', marginBottom: 8, cursor: 'pointer',
+              transition: 'background 0.1s'
             }}
             onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-row-hover)'}
             onMouseLeave={e => e.currentTarget.style.background = ''}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--link)', marginBottom: 2 }}>
+            <div style={{
+              display: 'flex', justifyContent: 'space-between',
+              alignItems: 'flex-start', gap: 12
+            }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  fontFamily: 'monospace', fontSize: 10,
+                  color: 'var(--link)', marginBottom: 3, fontWeight: 700
+                }}>
                   {eq.numero_ingreso}
                 </div>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)', marginBottom: 2 }}>
                   {eq.marca} {eq.modelo || eq.tipo_equipo}
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-                  {eq.falla_reportada ?? '—'}
-                </div>
+                {eq.falla_reportada && (
+                  <div style={{
+                    fontSize: 11, color: 'var(--text-3)',
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                  }}>
+                    {eq.falla_reportada}
+                  </div>
+                )}
               </div>
               <EstadoBadge estado={eq.estado_actual} />
             </div>
