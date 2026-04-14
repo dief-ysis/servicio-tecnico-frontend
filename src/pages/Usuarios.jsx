@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import client from '../api/client'
 import { useToast } from '../components/Toast'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 const inputStyle = {
   width: '100%', border: '0.5px solid var(--input-border)', borderRadius: 6,
