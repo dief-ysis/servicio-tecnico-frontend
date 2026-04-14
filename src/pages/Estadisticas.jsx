@@ -18,8 +18,12 @@ const ESTADO_LABELS = {
 }
 
 const ESTADO_COLORS = {
-  por_reparar: 'var(--warning-text)', en_reparacion: 'var(--info-text)',
-  reparado: 'var(--success-text)', irreparable: 'var(--danger-text)', entregado: 'var(--text-secondary)'
+  por_reparar:    '#e6b800',
+  en_reparacion:  '#185fa5',
+  espera_repuesto:'#6b2fa0',
+  reparado:       '#3b6011',
+  irreparable:    '#8a0000',
+  entregado:      '#888780',
 }
 
 export default function Estadisticas() {
@@ -41,9 +45,8 @@ export default function Estadisticas() {
   const barData = data?.totales.map(t => ({
     estado: ESTADO_LABELS[t.estado_actual] ?? t.estado_actual,
     total: parseInt(t.total),
-    color: ESTADO_COLORS[t.estado_actual] ?? 'var(--text-muted)'
-  })) ?? []
-
+    color: ESTADO_COLORS[t.estado_actual] ?? '#888'
+    })) ?? []
   const lineData = data?.porDia.map(d => ({
     fecha: new Date(d.fecha).toLocaleDateString('es-CL', { day: '2-digit', month: 'short' }),
     ingresos: parseInt(d.ingresos)
