@@ -27,11 +27,15 @@ export default function Privacidad() {
             Política de privacidad
           </h1>
           <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 28 }}>
-            Vigente desde enero 2025 · Ley 19.628 sobre Protección de la Vida Privada
+            Vigente desde enero 2025 · Ley 19.628 sobre Protección de la Vida Privada · Ley 21.719 (en período de implementación)
           </p>
 
           <Section titulo="1. Responsable del tratamiento">
-            <p>Light Solution Group Ltda., RUT [completar], con domicilio en Luis Beltrán 2125, Ñuñoa, Región Metropolitana, Chile. Contacto: [email].</p>
+            <p>
+              Light Solution, con domicilio en Luis Beltrán 2125, Ñuñoa, Región Metropolitana, Chile.
+              Para consultas sobre privacidad, contáctenos directamente en nuestro local o mediante los
+              canales de atención disponibles en el sistema.
+            </p>
           </Section>
 
           <Section titulo="2. Datos que recopilamos">
@@ -41,38 +45,77 @@ export default function Privacidad() {
               <li>Número de teléfono</li>
               <li>Correo electrónico (opcional)</li>
             </ul>
-            <p style={{ marginTop: 8 }}>Adicionalmente se registran datos técnicos del equipo ingresado a reparación.</p>
+            <p style={{ marginTop: 8 }}>
+              Adicionalmente se registran datos técnicos del equipo ingresado a reparación (tipo, marca,
+              modelo, falla reportada, diagnóstico) y un registro de auditoría de cambios internos.
+            </p>
           </Section>
 
           <Section titulo="3. Finalidad del tratamiento">
-            <p>Los datos son recopilados exclusivamente para gestionar el servicio técnico de reparación de equipos de escenografía y comunicar al cliente el estado de su equipo. No serán utilizados para fines comerciales ni compartidos con terceros sin consentimiento expreso.</p>
+            <p>
+              Los datos son recopilados exclusivamente para gestionar el servicio técnico de reparación
+              de equipos de iluminación y escenografía, y para comunicar al cliente el estado de su
+              equipo. No serán utilizados para fines comerciales ni compartidos con terceros sin
+              consentimiento expreso, salvo obligación legal.
+            </p>
           </Section>
 
           <Section titulo="4. Base legal">
-            <p>El tratamiento se basa en la relación contractual de servicio técnico entre el cliente y Light Solution, conforme al artículo 4° de la Ley 19.628.</p>
+            <p>
+              El tratamiento se basa en la relación contractual de servicio técnico entre el cliente y
+              Light Solution, conforme al artículo 4° de la Ley 19.628 sobre Protección de la Vida
+              Privada. Durante el período de implementación de la Ley 21.719 (Nueva Ley de Protección
+              de Datos Personales, publicada en diciembre 2024), nos comprometemos a adecuar nuestras
+              prácticas progresivamente a sus exigencias.
+            </p>
           </Section>
 
           <Section titulo="5. Derechos del titular">
-            <p>Conforme a la Ley 19.628 y la Ley 21.663, usted tiene derecho a:</p>
+            <p>Conforme a la Ley 19.628 y la futura vigencia plena de la Ley 21.719, usted tiene derecho a:</p>
             <ul style={{ marginTop: 8, paddingLeft: 20 }}>
               <li>Acceder a sus datos personales almacenados</li>
               <li>Solicitar la rectificación de datos incorrectos</li>
-              <li>Solicitar la eliminación de sus datos</li>
+              <li>Solicitar la eliminación o anonimización de sus datos</li>
               <li>Oponerse al tratamiento de sus datos</li>
+              <li>Portabilidad de sus datos (conforme Ley 21.719)</li>
             </ul>
-            <p style={{ marginTop: 8 }}>Para ejercer estos derechos, contáctenos en [email] indicando su nombre y RUT.</p>
+            <p style={{ marginTop: 8 }}>
+              Para ejercer estos derechos, visítenos en Luis Beltrán 2125, Ñuñoa, o comuníquese a
+              través de nuestros canales de contacto, indicando su nombre completo y RUT.
+            </p>
           </Section>
 
           <Section titulo="6. Seguridad">
-            <p>Los datos son almacenados en servidores con cifrado en tránsito (HTTPS/TLS). El acceso al sistema requiere autenticación con credenciales personales. Se mantiene un registro de accesos al sistema.</p>
+            <p>
+              Los datos son almacenados en servidores con cifrado en tránsito (HTTPS/TLS 1.2+). El
+              acceso al sistema requiere autenticación con credenciales personales e intransferibles.
+              Se mantiene un registro automático de accesos e intentos fallidos. El acceso a datos
+              está restringido según rol (recepcionista / técnico).
+            </p>
           </Section>
 
           <Section titulo="7. Retención de datos">
-            <p>Los datos se conservan mientras exista una relación de servicio activa o por el período mínimo exigido por la legislación tributaria chilena (6 años para registros de servicios).</p>
+            <p>
+              Los datos se conservan mientras exista una relación de servicio activa. Los registros
+              de servicios prestados se conservan por el período mínimo exigido por la legislación
+              tributaria chilena (6 años, conforme Código Tributario art. 200). Transcurrido dicho
+              plazo sin actividad, los datos personales pueden ser eliminados a solicitud del titular.
+            </p>
           </Section>
 
-          <Section titulo="8. Modificaciones">
-            <p>Esta política puede ser actualizada. La versión vigente siempre estará disponible en este sistema.</p>
+          <Section titulo="8. Garantía legal de reparaciones">
+            <p>
+              Conforme a la Ley 19.496 sobre Protección de los Derechos de los Consumidores, toda
+              reparación realizada cuenta con garantía legal. Ante cualquier consulta sobre garantías,
+              contáctenos directamente.
+            </p>
+          </Section>
+
+          <Section titulo="9. Modificaciones">
+            <p>
+              Esta política puede ser actualizada para reflejar cambios legales o en nuestras prácticas.
+              La versión vigente siempre estará disponible en este sistema con su fecha de actualización.
+            </p>
           </Section>
         </div>
       </div>

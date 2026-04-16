@@ -32,7 +32,7 @@ export default function Clientes() {
     const params = {}
     if (buscar) params.buscar = buscar
     setLoading(true)
-    getClientes(params).then(r => setClientes(r.data)).finally(() => setLoading(false))
+    getClientes(params).then(r => setClientes(r.data.data ?? r.data)).finally(() => setLoading(false))
   }, [buscar])
 
   useEffect(() => { cargar() }, [cargar])
@@ -178,7 +178,7 @@ export default function Clientes() {
 
 function ModalCliente({ cliente, onClose, onGuardado }) {
   const toast = useToast()
-  const isMobile = useIsMobile()
+  const { isMobile } = useIsMobile()
   const [form, setForm] = useState({
     nombre: cliente?.nombre ?? '',
     telefono: cliente?.telefono ?? '',
@@ -267,11 +267,11 @@ function ModalCliente({ cliente, onClose, onGuardado }) {
 function ModalDetalleCliente({ cliente, onClose }) {
   const [equipos, setEquipos] = useState([])
   const [loading, setLoading] = useState(true)
-  const isMobile = useIsMobile()
+  const { isMobile } = useIsMobile()
   const navigate = useNavigate()
 
   useEffect(() => {
-    getEquipos({ cliente_id: cliente.id }).then(r => setEquipos(r.data)).finally(() => setLoading(false))
+    getEquipos({ cliente_id: cliente.id, limite: 200 }).then(r => setEquipos(r.data.data ?? r.data)).finally(() => setLoading(false))
   }, [cliente.id])
 
   return (

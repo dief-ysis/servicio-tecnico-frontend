@@ -2,9 +2,12 @@ import axios from 'axios'
 
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+  // Necesario para enviar/recibir cookies httpOnly en requests cross-origin
+  withCredentials: true,
 })
 
 client.interceptors.request.use((config) => {
+  // Compatibilidad: si aún hay token en localStorage lo incluye como header
   const token = localStorage.getItem('token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`

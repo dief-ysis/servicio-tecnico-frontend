@@ -7,7 +7,7 @@ import { SkeletonTable } from '../components/Skeleton'
 import { useToast } from '../components/Toast'
 import { exportarEquipos } from '../utils/exportExcel'
 import { useIsMobile } from '../hooks/useIsMobile'
-import { buscarClientesBsale } from '../../api/equipos'
+import { buscarClientesBsale } from '../api/equipos'
 
 const ESTADOS = ['por_reparar', 'en_reparacion', 'espera_repuesto', 'reparado', 'irreparable', 'entregado']
 const ESTADOS_LABELS = {
@@ -59,7 +59,7 @@ export default function Equipos() {
     setLoading(true)
     try {
       const r = await getEquipos(params)
-      setEquipos(r.data)
+      setEquipos(r.data.data ?? r.data)
     } catch {
       toast('Error al cargar equipos', 'error')
     } finally {
@@ -116,7 +116,7 @@ export default function Equipos() {
         />
         <select value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}
           style={{ ...inputStyle, width: 160 }}>
-          {ESTADOS.map(e => (
+          {['', ...ESTADOS].map(e => (
             <option key={e} value={e}>{ESTADOS_LABELS[e]}</option>
           ))}
         </select>
@@ -159,118 +159,112 @@ export default function Equipos() {
       </div>
 
       {isMobile ? (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {loading ? (
-          <div style={{ color: 'var(--text-3)', fontSize: 13, padding: 16 }}>Cargando...</div>
-        ) : equipos.length === 0 ? (
-          <div style={{ color: 'var(--text-3)', fontSize: 13, padding: 16, textAlign: 'center' }}>
-            No hay equipos
-          </div>
-        ) : equipos.map(eq => (
-          <div key={eq.id}
-            onClick={() => navigate(`/equipos/${eq.id}`)}
-            style={{
-              background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-              borderRadius: 8, padding: '14px 16px', cursor: 'pointer'
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-              <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#334862', fontWeight: 700 }}>
-                {eq.numero_ingreso}
-              </span>
-              <EstadoBadge estado={eq.estado_actual} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {loading ? (
+            <div style={{ color: 'var(--text-3)', fontSize: 13, padding: 16 }}>Cargando...</div>
+          ) : equipos.length === 0 ? (
+            <div style={{ color: 'var(--text-3)', fontSize: 13, padding: 16, textAlign: 'center' }}>
+              No hay equipos
             </div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-1)', marginBottom: 4 }}>
-              {eq.cliente_nombre}
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 4 }}>
-              {eq.tipo_equipo} · {eq.marca} {eq.modelo}
-            </div>
-            {eq.falla_reportada && (
-              <div style={{
-                fontSize: 11, color: 'var(--text-3)',
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
-              }}>
-                {eq.falla_reportada}
-              </div>
-            )}
-            <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}>
-              {new Date(eq.fecha_ingreso).toLocaleDateString('es-CL', {
-                day: '2-digit', month: 'short', year: '2-digit'
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-    ) : (
-      <div className="tabla-scroll">
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 10, overflow: 'hidden' }}>
-          {/* tabla existente */}
-        </div>
-      </div>
-    )}
-
-      <div className="tabla-scroll">
-        <div style={{ background: 'var(--bg-card)', border: '0.5px solid var(--border-color)', borderRadius: 10, overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ background: 'var(--bg-table-head)' }}>
-              {['N° Ingreso', 'Cliente', 'Equipo', 'Falla', 'Estado', 'Ingreso', ''].map(h => (
-                <th key={h} style={{
-                  padding: '9px 16px', textAlign: 'left', fontSize: 11,
-                  color: 'var(--text-3)', fontWeight: 600, borderBottom: '0.5px solid var(--border-color)',
-                  letterSpacing: '0.05em'
-                }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <SkeletonTable rows={5} cols={7} />
-            ) : equipos.length === 0 ? (
-              <tr><td colSpan={7} style={{ padding: 32, textAlign: 'center', color: 'var(--text-3)' }}>No hay equipos</td></tr>
-            ) : equipos.map(eq => (
-              <tr key={eq.id}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-row-hover)'}
-                onMouseLeave={e => e.currentTarget.style.background = ''}
-                style={{ cursor: 'pointer' }}
-              >
-                <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontFamily: 'monospace', fontSize: 12, color: 'var(--link)', borderBottom: '0.5px solid var(--border-color)' }}>
+          ) : equipos.map(eq => (
+            <div key={eq.id}
+              onClick={() => navigate(`/equipos/${eq.id}`)}
+              style={{
+                background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                borderRadius: 8, padding: '14px 16px', cursor: 'pointer'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#334862', fontWeight: 700 }}>
                   {eq.numero_ingreso}
-                </td>
-                <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontSize: 13, borderBottom: '0.5px solid var(--border-color)' }}>
-                  <div>{eq.cliente_nombre}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{eq.cliente_telefono}</div>
-                </td>
-                <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontSize: 13, borderBottom: '0.5px solid var(--border-color)' }}>
-                  <div>{eq.tipo_equipo}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{eq.marca} {eq.modelo}</div>
-                </td>
-                <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontSize: 12, color: 'var(--text-2)', borderBottom: '0.5px solid var(--border-color)', maxWidth: 160 }}>
-                  <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {eq.falla_reportada ?? '—'}
-                  </div>
-                </td>
-                <td style={{ padding: '11px 16px', borderBottom: '0.5px solid var(--border-color)' }}>
-                  <EstadoBadge estado={eq.estado_actual} />
-                </td>
-                <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontSize: 12, color: 'var(--text-3)', borderBottom: '0.5px solid var(--border-color)' }}>
-                  {formatFecha(eq.fecha_ingreso)}
-                </td>
-                <td style={{ padding: '11px 16px', borderBottom: '0.5px solid var(--border-color)' }}>
-                  <button onClick={() => navigate(`/equipos/${eq.id}`)} style={{
-                    background: 'none', border: '0.5px solid var(--border)', borderRadius: 5,
-                    padding: '4px 10px', fontSize: 11, color: 'var(--link)', cursor: 'pointer'
-                  }}>
-                    Ver →
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+                </span>
+                <EstadoBadge estado={eq.estado_actual} />
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-1)', marginBottom: 4 }}>
+                {eq.cliente_nombre}
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 4 }}>
+                {eq.tipo_equipo} · {eq.marca} {eq.modelo}
+              </div>
+              {eq.falla_reportada && (
+                <div style={{
+                  fontSize: 11, color: 'var(--text-3)',
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                }}>
+                  {eq.falla_reportada}
+                </div>
+              )}
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}>
+                {new Date(eq.fecha_ingreso).toLocaleDateString('es-CL', {
+                  day: '2-digit', month: 'short', year: '2-digit'
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="tabla-scroll">
+          <div style={{ background: 'var(--bg-card)', border: '0.5px solid var(--border-color)', borderRadius: 10, overflow: 'hidden' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: 'var(--bg-table-head)' }}>
+                  {['N° Ingreso', 'Cliente', 'Equipo', 'Falla', 'Estado', 'Ingreso', ''].map(h => (
+                    <th key={h} style={{
+                      padding: '9px 16px', textAlign: 'left', fontSize: 11,
+                      color: 'var(--text-3)', fontWeight: 600, borderBottom: '0.5px solid var(--border-color)',
+                      letterSpacing: '0.05em'
+                    }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <SkeletonTable rows={5} cols={7} />
+                ) : equipos.length === 0 ? (
+                  <tr><td colSpan={7} style={{ padding: 32, textAlign: 'center', color: 'var(--text-3)' }}>No hay equipos</td></tr>
+                ) : equipos.map(eq => (
+                  <tr key={eq.id}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-row-hover)'}
+                    onMouseLeave={e => e.currentTarget.style.background = ''}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontFamily: 'monospace', fontSize: 12, color: 'var(--link)', borderBottom: '0.5px solid var(--border-color)' }}>
+                      {eq.numero_ingreso}
+                    </td>
+                    <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontSize: 13, borderBottom: '0.5px solid var(--border-color)' }}>
+                      <div>{eq.cliente_nombre}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{eq.cliente_telefono}</div>
+                    </td>
+                    <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontSize: 13, borderBottom: '0.5px solid var(--border-color)' }}>
+                      <div>{eq.tipo_equipo}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{eq.marca} {eq.modelo}</div>
+                    </td>
+                    <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontSize: 12, color: 'var(--text-2)', borderBottom: '0.5px solid var(--border-color)', maxWidth: 160 }}>
+                      <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {eq.falla_reportada ?? '—'}
+                      </div>
+                    </td>
+                    <td style={{ padding: '11px 16px', borderBottom: '0.5px solid var(--border-color)' }}>
+                      <EstadoBadge estado={eq.estado_actual} />
+                    </td>
+                    <td onClick={() => navigate(`/equipos/${eq.id}`)} style={{ padding: '11px 16px', fontSize: 12, color: 'var(--text-3)', borderBottom: '0.5px solid var(--border-color)' }}>
+                      {formatFecha(eq.fecha_ingreso)}
+                    </td>
+                    <td style={{ padding: '11px 16px', borderBottom: '0.5px solid var(--border-color)' }}>
+                      <button onClick={() => navigate(`/equipos/${eq.id}`)} style={{
+                        background: 'none', border: '0.5px solid var(--border)', borderRadius: 5,
+                        padding: '4px 10px', fontSize: 11, color: 'var(--link)', cursor: 'pointer'
+                      }}>
+                        Ver →
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {showModal && (
         <ModalNuevoEquipo
@@ -303,16 +297,16 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
 
   useEffect(() => {
     if (buscarCliente.length >= 2) {
-      getClientes({ buscar: buscarCliente }).then(r => setClientes(r.data))
+      getClientes({ buscar: buscarCliente }).then(r => setClientes(r.data.data ?? r.data))
     } else if (buscarCliente.length === 0) {
-      getClientes({}).then(r => setClientes(r.data.slice(0, 6)))
+      getClientes({}).then(r => setClientes((r.data.data ?? r.data).slice(0, 6)))
     } else {
       setClientes([])
     }
   }, [buscarCliente])
 
   useEffect(() => {
-    getClientes({}).then(r => setClientes(r.data.slice(0, 6)))
+    getClientes({}).then(r => setClientes((r.data.data ?? r.data).slice(0, 6)))
   }, [])
 
   const handleSubmit = async () => {

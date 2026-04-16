@@ -5,3 +5,6 @@ export const login = (email, password) =>
 
 export const getMe = () =>
   client.get('/auth/me')
+
+export const logoutApi = () =>
+  client.post('/auth/logout')

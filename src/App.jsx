@@ -23,32 +23,30 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/privacidad" element={<Privacidad />} />
       <Route path="/" element={
         <PrivateRoute><Layout><Dashboard /></Layout></PrivateRoute>
       }/>
       <Route path="/equipos" element={
         <PrivateRoute><Layout><Equipos /></Layout></PrivateRoute>
       }/>
-      <Route path="/clientes" element={
-        <PrivateRoute><Layout><Clientes /></Layout></PrivateRoute>
+      <Route path="/equipos/:id/orden" element={
+        <PrivateRoute><OrdenTrabajo /></PrivateRoute>
       }/>
-      <Route path="*" element={<Navigate to="/" replace />} />
       <Route path="/equipos/:id" element={
         <PrivateRoute><Layout><EquipoDetalle /></Layout></PrivateRoute>
+      }/>
+      <Route path="/clientes" element={
+        <PrivateRoute><Layout><Clientes /></Layout></PrivateRoute>
       }/>
       <Route path="/usuarios" element={
         <PrivateRoute><Layout><Usuarios /></Layout></PrivateRoute>
       }/>
-      <Route path="/equipos/:id/orden" element={
-        <PrivateRoute><OrdenTrabajo /></PrivateRoute>
-      }/>
-      <Route path="*" element={<NotFound />} />
-      <Route path="/privacidad" element={<Privacidad />} />
       <Route path="/estadisticas" element={
         <PrivateRoute><Layout><Estadisticas /></Layout></PrivateRoute>
       }/>
+      <Route path="*" element={<NotFound />} />
     </Routes>
-    
   )
 }
 

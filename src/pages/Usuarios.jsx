@@ -134,6 +134,7 @@ export default function Usuarios() {
 }
 
 function ModalUsuario({ usuario, onClose, onGuardado }) {
+  const toast = useToast()
   const { isMobile } = useIsMobile()
   const [form, setForm] = useState({
     nombre: usuario?.nombre ?? '',

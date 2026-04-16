@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getEquipo, cambiarEstado, getHistorial, actualizarEquipo, subirFoto } from '../api/equipos'
 import EstadoBadge from '../components/EstadoBadge'
@@ -41,21 +41,26 @@ export default function EquipoDetalle() {
   const [generandoDoc, setGenerandoDoc] = useState(false)
   const [docGenerado, setDocGenerado] = useState(null)
 
-  const cargar = () => {
-    Promise.all([getEquipo(id), getHistorial(id)]).then(([eq, hist]) => {
-      setEquipo(eq.data)
-      setForm({
-        diagnostico: eq.data.diagnostico ?? '',
-        observaciones: eq.data.observaciones ?? '',
-        accesorios: eq.data.accesorios ?? '',
-        notas_tecnico: eq.data.notas_tecnico ?? '',
-        costo_reparacion: eq.data.costo_reparacion ?? '',
+  const cargar = useCallback(() => {
+    setLoading(true)
+    Promise.all([getEquipo(id), getHistorial(id)])
+      .then(([eq, hist]) => {
+        setEquipo(eq.data)
+        setForm({
+          diagnostico: eq.data.diagnostico ?? '',
+          observaciones: eq.data.observaciones ?? '',
+          accesorios: eq.data.accesorios ?? '',
+          notas_tecnico: eq.data.notas_tecnico ?? '',
+          costo_reparacion: eq.data.costo_reparacion ?? '',
+          garantia_dias:    eq.data.garantia_dias ?? '',
+        })
+        setHistorial(hist.data)
       })
-      setHistorial(hist.data)
-    }).finally(() => setLoading(false))
-  }
+      .catch(() => toast('Error al cargar el equipo', 'error'))
+      .finally(() => setLoading(false))
+  }, [id, toast])
 
-  useEffect(() => { cargar() }, [id])
+  useEffect(() => { cargar() }, [cargar])
 
   const handleEstado = async (estado) => {
     if (estado === 'irreparable' || estado === 'entregado') {
@@ -97,27 +102,27 @@ export default function EquipoDetalle() {
   }
 
   const handleGenerarDocumento = async () => {
-  if (!equipo.costo_reparacion || equipo.costo_reparacion <= 0) {
-    toast('Debes ingresar el costo de reparación primero', 'error')
-    return
+    if (!equipo.costo_reparacion || equipo.costo_reparacion <= 0) {
+      toast('Debes ingresar el costo de reparación primero', 'error')
+      return
+    }
+    setGenerandoDoc(true)
+    try {
+      const res = await generarDocumentoBsale({
+        equipoId: id,
+        clienteBsaleId: equipo.cliente_bsale_id,
+        monto: equipo.costo_reparacion,
+        descripcion: `Reparación ${equipo.tipo_equipo} ${equipo.marca} ${equipo.modelo} - ${equipo.falla_reportada}`
+      })
+      setDocGenerado(res.data)
+      toast('Documento generado en Bsale')
+      cargar()
+    } catch (err) {
+      toast(err.response?.data?.error ?? 'Error al generar documento', 'error')
+    } finally {
+      setGenerandoDoc(false)
+    }
   }
-  setGenerandoDoc(true)
-  try {
-    const res = await generarDocumentoBsale({
-      equipoId: id,
-      clienteBsaleId: equipo.cliente_bsale_id,
-      monto: equipo.costo_reparacion,
-      descripcion: `Reparación ${equipo.tipo_equipo} ${equipo.marca} ${equipo.modelo} - ${equipo.falla_reportada}`
-    })
-    setDocGenerado(res.data)
-    toast('Documento generado en Bsale')
-    cargar()
-  } catch (err) {
-    toast(err.response?.data?.error ?? 'Error al generar documento', 'error')
-  } finally {
-    setGenerandoDoc(false)
-  }
-}
 
   const formatFecha = (iso) => iso ? new Date(iso).toLocaleString('es-CL', {
     day: '2-digit', month: 'short', year: 'numeric',
@@ -287,28 +292,54 @@ export default function EquipoDetalle() {
           </div>
         </div>
 
-        {/* Costo */}
-        <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border-color)' }}>
-          <FieldLabel>Costo de reparación</FieldLabel>
-          {editando ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-              <span style={{ fontSize: 13, color: 'var(--text-2)', fontWeight: 700 }}>$</span>
-              <input type="number" min="0" step="100"
-                value={form.costo_reparacion}
-                onChange={e => setForm(p => ({ ...p, costo_reparacion: e.target.value }))}
-                style={{ ...inputStyle, maxWidth: 160, resize: 'none' }}
-                placeholder="0" />
-            </div>
-          ) : (
-            <div style={{
-              fontSize: 20, fontWeight: 900, color: 'var(--text-1)',
-              marginTop: 4
-            }}>
-              {equipo.costo_reparacion
-                ? `$${Number(equipo.costo_reparacion).toLocaleString('es-CL')}`
-                : <span style={{ fontSize: 14, color: 'var(--text-3)', fontWeight: 400 }}>—</span>}
-            </div>
-          )}
+        {/* Costo + Garantía */}
+        <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border-color)',
+          display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
+          <div>
+            <FieldLabel>Costo de reparación</FieldLabel>
+            {editando ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                <span style={{ fontSize: 13, color: 'var(--text-2)', fontWeight: 700 }}>$</span>
+                <input type="number" min="0" step="100"
+                  value={form.costo_reparacion}
+                  onChange={e => setForm(p => ({ ...p, costo_reparacion: e.target.value }))}
+                  style={{ ...inputStyle, maxWidth: 160, resize: 'none' }}
+                  placeholder="0" />
+              </div>
+            ) : (
+              <div style={{ fontSize: 20, fontWeight: 900, color: 'var(--text-1)', marginTop: 4 }}>
+                {equipo.costo_reparacion
+                  ? `$${Number(equipo.costo_reparacion).toLocaleString('es-CL')}`
+                  : <span style={{ fontSize: 14, color: 'var(--text-3)', fontWeight: 400 }}>—</span>}
+              </div>
+            )}
+          </div>
+          <div>
+            <FieldLabel>Garantía (días)</FieldLabel>
+            {editando ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                <input type="number" min="0" max="3650" step="1"
+                  value={form.garantia_dias ?? ''}
+                  onChange={e => setForm(p => ({ ...p, garantia_dias: e.target.value }))}
+                  style={{ ...inputStyle, maxWidth: 100, resize: 'none' }}
+                  placeholder="90" />
+                <span style={{ fontSize: 12, color: 'var(--text-3)' }}>días</span>
+              </div>
+            ) : equipo.garantia_dias ? (
+              <div style={{ marginTop: 4 }}>
+                <span style={{ fontSize: 16, fontWeight: 900, color: 'var(--success-text)' }}>
+                  {equipo.garantia_dias} días
+                </span>
+                {equipo.garantia_hasta && (
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>
+                    Vence: {new Date(equipo.garantia_hasta).toLocaleDateString('es-CL')}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div style={{ fontSize: 14, color: 'var(--text-3)', marginTop: 4 }}>—</div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -346,6 +377,64 @@ export default function EquipoDetalle() {
           </label>
         )}
       </div>
+
+        {usuario.rol === 'tecnico' &&
+    equipo.costo_reparacion > 0 &&
+    ['reparado', 'entregado'].includes(equipo.estado_actual) && (
+    <div style={{
+      background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+      borderRadius: 8, padding: '18px 20px', marginBottom: 12
+    }}>
+      <div style={{
+        fontSize: 9, fontWeight: 900, textTransform: 'uppercase',
+        letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: 14
+      }}>Facturación Bsale</div>
+
+      {docGenerado ? (
+        <div style={{
+          background: 'var(--success-bg)', border: '1px solid #a8cc80',
+          borderRadius: 6, padding: '12px 14px',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+        }}>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--success-text)' }}>
+              Documento N°{docGenerado.numero} generado
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--success-text)', marginTop: 2 }}>
+              ${Number(docGenerado.total).toLocaleString('es-CL')}
+            </div>
+          </div>
+          {docGenerado.urlPdf && (
+            <a href={docGenerado.urlPdf} target="_blank" rel="noreferrer" style={{
+              background: '#000', color: '#ffcd0d', borderRadius: 4,
+              padding: '6px 14px', fontSize: 10, fontWeight: 900,
+              letterSpacing: '0.08em', textTransform: 'uppercase'
+            }}>
+              Ver PDF
+            </a>
+          )}
+        </div>
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontSize: 13, color: 'var(--text-2)' }}>
+            Generar documento por{' '}
+            <strong style={{ color: 'var(--text-1)' }}>
+              ${Number(equipo.costo_reparacion).toLocaleString('es-CL')}
+            </strong>
+          </div>
+          <button onClick={handleGenerarDocumento} disabled={generandoDoc} style={{
+            background: '#000', color: '#ffcd0d', border: 'none',
+            borderRadius: 4, padding: '8px 16px', fontSize: 10,
+            fontWeight: 900, letterSpacing: '0.08em',
+            textTransform: 'uppercase', cursor: 'pointer',
+            opacity: generandoDoc ? 0.6 : 1
+          }}>
+            {generandoDoc ? 'Generando...' : 'Generar en Bsale'}
+          </button>
+        </div>
+      )}
+    </div>
+  )}
 
       {/* Cambiar estado */}
       {usuario.rol === 'tecnico' && (

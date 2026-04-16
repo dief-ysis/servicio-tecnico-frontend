@@ -23,7 +23,7 @@ export default function Dashboard() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    getEquipos().then(r => setEquipos(r.data)).finally(() => setLoading(false))
+    getEquipos({ limite: 500 }).then(r => setEquipos(r.data.data ?? r.data)).finally(() => setLoading(false))
     getSinMovimiento(7).then(r => setSinMovimiento(r.data))
   }, [])
 
