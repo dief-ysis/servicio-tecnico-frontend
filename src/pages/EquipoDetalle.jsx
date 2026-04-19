@@ -5,7 +5,7 @@ import EstadoBadge from '../components/EstadoBadge'
 import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../components/Toast'
 import { useIsMobile } from '../hooks/useIsMobile'
-import { generarDocumentoBsale } from '../api/equipos'
+import { generarDocumentoBsale, getBsaleConfig } from '../api/equipos'
 
 const inputStyle = {
   width: '100%', border: '1px solid var(--input-border)', borderRadius: 4,
@@ -40,6 +40,9 @@ export default function EquipoDetalle() {
   const [subiendo, setSubiendo] = useState(false)
   const [generandoDoc, setGenerandoDoc] = useState(false)
   const [docGenerado, setDocGenerado] = useState(null)
+  const [bsaleConfig, setBsaleConfig] = useState(null)
+  const [docTypeId, setDocTypeId] = useState('')
+  const [officeId, setOfficeId] = useState('')
 
   const cargar = useCallback(() => {
     setLoading(true)
@@ -61,6 +64,19 @@ export default function EquipoDetalle() {
   }, [id, toast])
 
   useEffect(() => { cargar() }, [cargar])
+
+  // Cargar tipos de documento y oficinas de BSale (solo técnico)
+  useEffect(() => {
+    if (usuario?.rol !== 'tecnico') return
+    getBsaleConfig()
+      .then(r => {
+        setBsaleConfig(r.data)
+        // Pre-seleccionar el primero disponible
+        if (r.data.tipos?.length)   setDocTypeId(String(r.data.tipos[0].id))
+        if (r.data.oficinas?.length) setOfficeId(String(r.data.oficinas[0].id))
+      })
+      .catch(() => {}) // no bloquear si BSale no responde
+  }, [usuario])
 
   const handleEstado = async (estado) => {
     if (estado === 'irreparable' || estado === 'entregado') {
@@ -112,13 +128,17 @@ export default function EquipoDetalle() {
         equipoId: id,
         clienteBsaleId: equipo.cliente_bsale_id,
         monto: equipo.costo_reparacion,
-        descripcion: `Reparación ${equipo.tipo_equipo} ${equipo.marca} ${equipo.modelo} - ${equipo.falla_reportada}`
+        descripcion: `Reparación ${equipo.tipo_equipo} ${equipo.marca} ${equipo.modelo} - ${equipo.falla_reportada}`,
+        documentTypeId: docTypeId ? parseInt(docTypeId) : undefined,
+        officeId:       officeId  ? parseInt(officeId)  : undefined,
       })
       setDocGenerado(res.data)
       toast('Documento generado en Bsale')
       cargar()
     } catch (err) {
-      toast(err.response?.data?.error ?? 'Error al generar documento', 'error')
+      const msg = err.response?.data?.error ?? 'Error al generar documento'
+      const det = err.response?.data?.detalle?.error
+      toast(det ? `${msg}: ${det}` : msg, 'error')
     } finally {
       setGenerandoDoc(false)
     }
@@ -442,6 +462,43 @@ export default function EquipoDetalle() {
             ⚠ Este cliente no está vinculado a Bsale. Para facturar, el equipo debe registrarse con un cliente de Bsale.
           </div>
       ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* Selectores de tipo documento y oficina */}
+          {bsaleConfig && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)',
+                  textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+                  Tipo de documento
+                </div>
+                <select value={docTypeId} onChange={e => setDocTypeId(e.target.value)} style={{
+                  width: '100%', border: '1px solid var(--input-border)', borderRadius: 4,
+                  padding: '7px 9px', fontSize: 12, background: 'var(--input-bg)',
+                  color: 'var(--text-1)', outline: 'none'
+                }}>
+                  {bsaleConfig.tipos.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)',
+                  textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+                  Oficina / Sucursal
+                </div>
+                <select value={officeId} onChange={e => setOfficeId(e.target.value)} style={{
+                  width: '100%', border: '1px solid var(--input-border)', borderRadius: 4,
+                  padding: '7px 9px', fontSize: 12, background: 'var(--input-bg)',
+                  color: 'var(--text-1)', outline: 'none'
+                }}>
+                  {bsaleConfig.oficinas.map(o => (
+                    <option key={o.id} value={o.id}>{o.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ fontSize: 13, color: 'var(--text-2)' }}>
               Generar documento por{' '}
@@ -449,16 +506,17 @@ export default function EquipoDetalle() {
                 ${Number(equipo.costo_reparacion).toLocaleString('es-CL')}
               </strong>
             </div>
-            <button onClick={handleGenerarDocumento} disabled={generandoDoc} style={{
+            <button onClick={handleGenerarDocumento} disabled={generandoDoc || (!docTypeId && bsaleConfig)} style={{
               background: '#000', color: '#ffcd0d', border: 'none',
               borderRadius: 4, padding: '8px 16px', fontSize: 10,
               fontWeight: 900, letterSpacing: '0.08em',
               textTransform: 'uppercase', cursor: 'pointer',
-              opacity: generandoDoc ? 0.6 : 1
+              opacity: generandoDoc || (!docTypeId && bsaleConfig) ? 0.6 : 1
             }}>
               {generandoDoc ? 'Generando...' : 'Generar en Bsale'}
             </button>
           </div>
+        </div>
       )}
     </div>
   )}
