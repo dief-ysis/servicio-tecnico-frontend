@@ -447,15 +447,27 @@ export default function EquipoDetalle() {
               ${Number(docGenerado.total).toLocaleString('es-CL')}
             </div>
           </div>
-          {docGenerado.urlPdf && (
-            <a href={docGenerado.urlPdf} target="_blank" rel="noreferrer" style={{
-              background: '#000', color: '#ffcd0d', borderRadius: 4,
-              padding: '6px 14px', fontSize: 10, fontWeight: 900,
-              letterSpacing: '0.08em', textTransform: 'uppercase'
-            }}>
-              Ver PDF
-            </a>
-          )}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {docGenerado.urlPdf && (
+              <a href={docGenerado.urlPdf} target="_blank" rel="noreferrer" style={{
+                background: '#000', color: '#ffcd0d', borderRadius: 4,
+                padding: '6px 14px', fontSize: 10, fontWeight: 900,
+                letterSpacing: '0.08em', textTransform: 'uppercase', textDecoration: 'none'
+              }}>
+                Ver PDF
+              </a>
+            )}
+            {docGenerado.urlWeb && (
+              <a href={docGenerado.urlWeb} target="_blank" rel="noreferrer" style={{
+                background: 'var(--bg-card)', color: 'var(--link)',
+                border: '1px solid var(--border-color)',
+                borderRadius: 4, padding: '6px 14px', fontSize: 10, fontWeight: 900,
+                letterSpacing: '0.08em', textTransform: 'uppercase', textDecoration: 'none'
+              }}>
+                Ver en Bsale
+              </a>
+            )}
+          </div>
         </div>
       ) : !equipo.cliente_bsale_id ? (
           <div style={{
