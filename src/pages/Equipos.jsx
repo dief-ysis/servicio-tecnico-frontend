@@ -39,6 +39,8 @@ const labelStyle = {
   textTransform: 'uppercase', letterSpacing: '0.06em'
 }
 
+const LIMITE = 50
+
 export default function Equipos() {
   const toast = useToast()
   const { isMobile, isSmall } = useIsMobile()
@@ -49,10 +51,13 @@ export default function Equipos() {
   const [fechaDesde, setFechaDesde] = useState('')
   const [fechaHasta, setFechaHasta] = useState('')
   const [showModal, setShowModal] = useState(false)
+  const [pagina, setPagina] = useState(1)
+  const [totalPaginas, setTotalPaginas] = useState(1)
+  const [total, setTotal] = useState(0)
   const navigate = useNavigate()
-  
-  const cargar = useCallback(async () => {
-    const params = {}
+
+  const cargar = useCallback(async (pag = 1) => {
+    const params = { pagina: pag, limite: LIMITE }
     if (filtroEstado) params.estado = filtroEstado
     if (buscar) params.buscar = buscar
     if (fechaDesde) params.fecha_desde = fechaDesde
@@ -61,6 +66,8 @@ export default function Equipos() {
     try {
       const r = await getEquipos(params)
       setEquipos(r.data.data ?? r.data)
+      setTotalPaginas(r.data.paginas ?? 1)
+      setTotal(r.data.total ?? (r.data.data ?? r.data).length)
     } catch {
       toast('Error al cargar equipos', 'error')
     } finally {
@@ -68,10 +75,8 @@ export default function Equipos() {
     }
   }, [filtroEstado, buscar, fechaDesde, fechaHasta, toast])
 
-  useEffect(() => {
-    const load = async () => { await cargar() }
-    load()
-  }, [cargar])
+  // Un solo efecto — se dispara cuando cambia la página O cuando cambia cargar (filtros)
+  useEffect(() => { cargar(pagina) }, [pagina, cargar])
 
   const formatFecha = (iso) => new Date(iso).toLocaleDateString('es-CL', {
     day: '2-digit', month: 'short', year: '2-digit'
@@ -112,10 +117,10 @@ export default function Equipos() {
       <div className="filtros-grid" style={{ display: 'flex', gap: 10, marginBottom: 18, flexWrap: 'wrap' }}>
         <input
           placeholder="Buscar por cliente, N° ingreso o marca..."
-          value={buscar} onChange={e => setBuscar(e.target.value)}
+          value={buscar} onChange={e => { setBuscar(e.target.value); setPagina(1) }}
           style={{ ...inputStyle, maxWidth: 320 }}
         />
-        <select value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}
+        <select value={filtroEstado} onChange={e => { setFiltroEstado(e.target.value); setPagina(1) }}
           style={{ ...inputStyle, width: 160 }}>
           {['', ...ESTADOS].map(e => (
             <option key={e} value={e}>{ESTADOS_LABELS[e]}</option>
@@ -129,7 +134,7 @@ export default function Equipos() {
           <input
             type="date"
             value={fechaDesde}
-            onChange={e => setFechaDesde(e.target.value)}
+            onChange={e => { setFechaDesde(e.target.value); setPagina(1) }}
             style={{ ...inputStyle, width: 140 }}
           />
         </div>
@@ -141,7 +146,7 @@ export default function Equipos() {
           <input
             type="date"
             value={fechaHasta}
-            onChange={e => setFechaHasta(e.target.value)}
+            onChange={e => { setFechaHasta(e.target.value); setPagina(1) }}
             style={{ ...inputStyle, width: 140 }}
           />
         </div>
@@ -267,10 +272,46 @@ export default function Equipos() {
         </div>
       )}
 
+      {/* Paginación */}
+      {totalPaginas > 1 && (
+        <div style={{
+          display: 'flex', gap: 8, marginTop: 16,
+          justifyContent: 'center', alignItems: 'center'
+        }}>
+          <button
+            disabled={pagina === 1}
+            onClick={() => setPagina(p => p - 1)}
+            style={{
+              background: pagina === 1 ? 'var(--bg-card)' : 'var(--primary)',
+              border: '1px solid var(--border-color)', borderRadius: 4,
+              padding: '7px 16px', fontSize: 12, fontWeight: 700,
+              cursor: pagina === 1 ? 'default' : 'pointer', color: '#000',
+              opacity: pagina === 1 ? 0.35 : 1
+            }}>
+            ← Anterior
+          </button>
+          <span style={{ fontSize: 12, color: 'var(--text-2)', minWidth: 220, textAlign: 'center' }}>
+            Página {pagina} de {totalPaginas} · {total.toLocaleString('es-CL')} equipos
+          </span>
+          <button
+            disabled={pagina >= totalPaginas}
+            onClick={() => setPagina(p => p + 1)}
+            style={{
+              background: pagina >= totalPaginas ? 'var(--bg-card)' : 'var(--primary)',
+              border: '1px solid var(--border-color)', borderRadius: 4,
+              padding: '7px 16px', fontSize: 12, fontWeight: 700,
+              cursor: pagina >= totalPaginas ? 'default' : 'pointer', color: '#000',
+              opacity: pagina >= totalPaginas ? 0.35 : 1
+            }}>
+            Siguiente →
+          </button>
+        </div>
+      )}
+
       {showModal && (
         <ModalNuevoEquipo
           onClose={() => setShowModal(false)}
-          onCreado={() => { setShowModal(false); cargar() }}
+          onCreado={() => { setShowModal(false); cargar(pagina) }}
         />
       )}
     </div>
