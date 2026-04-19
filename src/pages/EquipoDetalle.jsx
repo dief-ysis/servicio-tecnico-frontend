@@ -233,7 +233,7 @@ export default function EquipoDetalle() {
             fontSize: 9, fontWeight: 900, textTransform: 'uppercase',
             letterSpacing: '0.12em', color: 'var(--text-3)'
           }}>Diagnóstico y notas</div>
-          {usuario.rol === 'tecnico' && (
+          {usuario.rol === 'tecnico' && !['reparado', 'entregado'].includes(equipo.estado_actual) && (
             <button onClick={() => editando ? handleGuardar() : setEditando(true)} style={{
               background: editando ? '#ffcd0d' : 'none',
               border: '1px solid var(--border-color)', borderRadius: 4,
@@ -243,6 +243,14 @@ export default function EquipoDetalle() {
             }}>
               {guardando ? 'Guardando...' : editando ? 'Guardar' : 'Editar'}
             </button>
+          )}
+          {usuario.rol === 'tecnico' && ['reparado', 'entregado'].includes(equipo.estado_actual) && (
+            <span style={{
+              fontSize: 10, color: 'var(--text-3)', fontWeight: 700,
+              textTransform: 'uppercase', letterSpacing: '0.06em'
+            }}>
+              🔒 Solo lectura
+            </span>
           )}
         </div>
 
@@ -300,7 +308,7 @@ export default function EquipoDetalle() {
             {editando ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
                 <span style={{ fontSize: 13, color: 'var(--text-2)', fontWeight: 700 }}>$</span>
-                <input type="number" min="0" step="100"
+                <input type="number" min="0" step="1"
                   value={form.costo_reparacion}
                   onChange={e => setForm(p => ({ ...p, costo_reparacion: e.target.value }))}
                   style={{ ...inputStyle, maxWidth: 160, resize: 'none' }}
@@ -343,7 +351,7 @@ export default function EquipoDetalle() {
         </div>
       </div>
 
-      {/* Foto */}
+      {/* Foto — visible para todos, upload solo técnico */}
       <div style={{
         background: 'var(--bg-card)', border: '1px solid var(--border-color)',
         borderRadius: 8, padding: '18px 20px', marginBottom: 12
@@ -353,15 +361,24 @@ export default function EquipoDetalle() {
           letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: 14
         }}>Foto del equipo</div>
         {equipo.foto_url ? (
-          <img src={equipo.foto_url} alt="Foto del equipo"
-            style={{
-              width: '100%', maxWidth: 400, borderRadius: 6,
-              border: '1px solid var(--border-color)', cursor: 'pointer',
-              display: 'block'
-            }}
-            onClick={() => window.open(equipo.foto_url, '_blank')}
-          />
-        ) : (
+          <div>
+            <img src={equipo.foto_url} alt="Foto del equipo"
+              style={{
+                width: '100%', maxWidth: 400, borderRadius: 6,
+                border: '1px solid var(--border-color)', cursor: 'pointer',
+                display: 'block'
+              }}
+              onClick={() => window.open(equipo.foto_url, '_blank')}
+            />
+            {/* URL de Cloudinary solo para técnico */}
+            {usuario.rol === 'tecnico' && (
+              <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-3)',
+                wordBreak: 'break-all', fontFamily: 'monospace' }}>
+                {equipo.foto_url}
+              </div>
+            )}
+          </div>
+        ) : usuario.rol === 'tecnico' ? (
           <label style={{ cursor: 'pointer', display: 'block' }}>
             <div style={{
               border: '2px dashed var(--border-color)', borderRadius: 6,
@@ -375,12 +392,15 @@ export default function EquipoDetalle() {
               onChange={handleFoto} style={{ display: 'none' }}
               disabled={subiendo} />
           </label>
+        ) : (
+          <div style={{ color: 'var(--text-3)', fontSize: 13 }}>Sin foto</div>
         )}
       </div>
 
         {usuario.rol === 'tecnico' &&
     equipo.costo_reparacion > 0 &&
-    ['reparado', 'entregado'].includes(equipo.estado_actual) && (
+    ['reparado', 'entregado'].includes(equipo.estado_actual) &&
+    !equipo.bsale_documento_id && (
     <div style={{
       background: 'var(--bg-card)', border: '1px solid var(--border-color)',
       borderRadius: 8, padding: '18px 20px', marginBottom: 12
@@ -414,24 +434,31 @@ export default function EquipoDetalle() {
             </a>
           )}
         </div>
-      ) : (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontSize: 13, color: 'var(--text-2)' }}>
-            Generar documento por{' '}
-            <strong style={{ color: 'var(--text-1)' }}>
-              ${Number(equipo.costo_reparacion).toLocaleString('es-CL')}
-            </strong>
-          </div>
-          <button onClick={handleGenerarDocumento} disabled={generandoDoc} style={{
-            background: '#000', color: '#ffcd0d', border: 'none',
-            borderRadius: 4, padding: '8px 16px', fontSize: 10,
-            fontWeight: 900, letterSpacing: '0.08em',
-            textTransform: 'uppercase', cursor: 'pointer',
-            opacity: generandoDoc ? 0.6 : 1
+      ) : !equipo.cliente_bsale_id ? (
+          <div style={{
+            background: 'var(--warning-bg)', border: '1px solid #e6d060',
+            borderRadius: 6, padding: '10px 14px', fontSize: 12, color: 'var(--warning-text)'
           }}>
-            {generandoDoc ? 'Generando...' : 'Generar en Bsale'}
-          </button>
-        </div>
+            ⚠ Este cliente no está vinculado a Bsale. Para facturar, el equipo debe registrarse con un cliente de Bsale.
+          </div>
+      ) : (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontSize: 13, color: 'var(--text-2)' }}>
+              Generar documento por{' '}
+              <strong style={{ color: 'var(--text-1)' }}>
+                ${Number(equipo.costo_reparacion).toLocaleString('es-CL')}
+              </strong>
+            </div>
+            <button onClick={handleGenerarDocumento} disabled={generandoDoc} style={{
+              background: '#000', color: '#ffcd0d', border: 'none',
+              borderRadius: 4, padding: '8px 16px', fontSize: 10,
+              fontWeight: 900, letterSpacing: '0.08em',
+              textTransform: 'uppercase', cursor: 'pointer',
+              opacity: generandoDoc ? 0.6 : 1
+            }}>
+              {generandoDoc ? 'Generando...' : 'Generar en Bsale'}
+            </button>
+          </div>
       )}
     </div>
   )}

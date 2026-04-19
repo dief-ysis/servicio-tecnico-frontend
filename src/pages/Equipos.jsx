@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getEquipos, crearEquipo } from '../api/equipos'
-import { getClientes, crearCliente } from '../api/clientes'
+import { upsertClienteBsale } from '../api/clientes'
 import EstadoBadge from '../components/EstadoBadge'
 import { SkeletonTable } from '../components/Skeleton'
 import { useToast } from '../components/Toast'
@@ -278,14 +278,9 @@ export default function Equipos() {
 
 function ModalNuevoEquipo({ onClose, onCreado }) {
   const toast = useToast()
-  
   const { isMobile } = useIsMobile()
   const [step, setStep] = useState(1)
-  const [clientes, setClientes] = useState([])
-  const [buscarCliente, setBuscarCliente] = useState('')
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null)
-  const [nuevoCliente, setNuevoCliente] = useState({ nombre: '', telefono: '', email: '' })
-  const [modoNuevoCliente, setModoNuevoCliente] = useState(false)
   const [equipo, setEquipo] = useState({
     tipo_equipo: '', marca: '', modelo: '',
     falla_reportada: '', accesorios: '', observaciones: '', password_pin: ''
@@ -294,33 +289,14 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
   const [error, setError] = useState('')
   const [clientesBsale, setClientesBsale] = useState([])
   const [busquedaBsale, setBusquedaBsale] = useState(false)
-
-  useEffect(() => {
-    if (buscarCliente.length >= 2) {
-      getClientes({ buscar: buscarCliente }).then(r => setClientes(r.data.data ?? r.data))
-    } else if (buscarCliente.length === 0) {
-      getClientes({}).then(r => setClientes((r.data.data ?? r.data).slice(0, 6)))
-    } else {
-      setClientes([])
-    }
-  }, [buscarCliente])
-
-  useEffect(() => {
-    getClientes({}).then(r => setClientes((r.data.data ?? r.data).slice(0, 6)))
-  }, [])
+  const [seleccionandoBsale, setSeleccionandoBsale] = useState(false)
 
   const handleSubmit = async () => {
     setError('')
     if (!equipo.tipo_equipo) { setError('El tipo de equipo es requerido'); return }
     setLoading(true)
     try {
-      let cliente_id = clienteSeleccionado?.id
-      if (modoNuevoCliente) {
-        if (!nuevoCliente.nombre) { setError('El nombre del cliente es requerido'); setLoading(false); return }
-        const r = await crearCliente(nuevoCliente)
-        cliente_id = r.data.id
-      }
-      await crearEquipo({ ...equipo, cliente_id })
+      await crearEquipo({ ...equipo, cliente_id: clienteSeleccionado.id })
       toast('Equipo registrado correctamente')
       onCreado()
     } catch (err) {
@@ -361,134 +337,106 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
 
         {step === 1 && (
           <div>
-            {!modoNuevoCliente ? (
-              <>
-                <label style={labelStyle}>Buscar cliente o selecciona uno reciente</label>
-                <input
-                  placeholder="Nombre o teléfono..."
-                  value={buscarCliente}
-                  onChange={e => { setBuscarCliente(e.target.value); setClienteSeleccionado(null) }}
-                  style={inputStyle}
-                  autoFocus
-                />
-                {clientes.length > 0 && (
-                  <div style={{ border: '0.5px solid var(--border)', borderRadius: 6, marginTop: 4, overflow: 'hidden' }}>
-                    {clientes.map(c => (
-                      <div key={c.id} onClick={() => { setClienteSeleccionado(c); setClientes([]) }}
-                        style={{
-                          padding: '10px 12px', cursor: 'pointer', fontSize: 13,
-                          borderBottom: '0.5px solid var(--border)',
-                          background: clienteSeleccionado?.id === c.id ? 'var(--warning-bg)' : 'var(--bg-card)'
-                        }}>
-                        <div style={{ fontWeight: 600 }}>{c.nombre}</div>
-                        <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{c.telefono}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {clienteSeleccionado && (
-                  <div style={{ background: 'var(--success-bg)', borderRadius: 6, padding: '10px 12px', marginTop: 8, fontSize: 13, color: 'var(--success-text)' }}>
-                    ✓ <strong>{clienteSeleccionado.nombre}</strong> — {clienteSeleccionado.telefono}
-                  </div>
-                )}
-                <button onClick={() => setModoNuevoCliente(true)} style={{
-                  marginTop: 14, background: 'none', border: '0.5px solid var(--border)',
-                  borderRadius: 6, padding: '8px 14px', fontSize: 12, cursor: 'pointer', color: 'var(--link)'
-                }}>
-                  + Registrar cliente nuevo
-                </button>
+            <label style={labelStyle}>Buscar cliente en Bsale</label>
+            <input
+              placeholder="Nombre, empresa o RUT..."
+              autoFocus
+              onChange={async (e) => {
+                const q = e.target.value
+                if (q.length >= 2) {
+                  setBusquedaBsale(true)
+                  setClienteSeleccionado(null)
+                  try {
+                    const r = await buscarClientesBsale(q)
+                    setClientesBsale(r.data)
+                  } catch {
+                    setClientesBsale([])
+                  } finally {
+                    setBusquedaBsale(false)
+                  }
+                } else {
+                  setClientesBsale([])
+                }
+              }}
+              style={inputStyle}
+            />
 
-                <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--border-color)' }}>
-                  <div style={{
-                    fontSize: 9, fontWeight: 900, color: 'var(--text-3)',
-                    textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10
-                  }}>
-                    Buscar en Bsale
-                  </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <input
-                      placeholder="Nombre del cliente en Bsale..."
-                      onChange={async (e) => {
-                        const q = e.target.value
-                        if (q.length >= 2) {
-                          setBusquedaBsale(true)
-                          try {
-                            const r = await buscarClientesBsale(q)
-                            setClientesBsale(r.data)
-                          } catch {
-                            setClientesBsale([])
-                          } finally {
-                            setBusquedaBsale(false)
-                          }
-                        } else {
-                          setClientesBsale([])
-                        }
-                      }}
-                      style={inputStyle}
-                    />
-                  </div>
+            {busquedaBsale && (
+              <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 8 }}>Buscando en Bsale...</div>
+            )}
 
-                  {busquedaBsale && (
-                    <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 6 }}>Buscando...</div>
-                  )}
-
-                  {clientesBsale.length > 0 && (
-                    <div style={{
-                      border: '1px solid var(--border-color)', borderRadius: 6,
-                      marginTop: 6, overflow: 'hidden'
-                    }}>
-                      {clientesBsale.map(c => (
-                        <div key={c.id}
-                          onClick={async () => {
-                            const nombre = `${c.firstName ?? ''} ${c.lastName ?? ''}`.trim() || c.company
-                            const r = await crearCliente({
-                              nombre,
-                              telefono: c.phone ?? '',
-                              email: c.email ?? ''
-                            })
-                            setClienteSeleccionado(r.data)
-                            setClientesBsale([])
-                          }}
-                          style={{
-                            padding: '10px 12px', cursor: 'pointer', fontSize: 13,
-                            borderBottom: '1px solid var(--border-color)',
-                            background: 'var(--bg-card)'
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-row-hover)'}
-                          onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-card)'}
-                        >
-                          <div style={{ fontWeight: 600, color: 'var(--text-1)' }}>
-                            {`${c.firstName ?? ''} ${c.lastName ?? ''}`.trim() || c.company}
-                          </div>
-                          <div style={{ fontSize: 11, color: 'var(--text-3)' }}>
-                            {c.code && `RUT: ${c.code}`} {c.phone && `· ${c.phone}`}
-                          </div>
-                        </div>
-                      ))}
+            {clientesBsale.length > 0 && !clienteSeleccionado && (
+              <div style={{
+                border: '1px solid var(--border-color)', borderRadius: 6,
+                marginTop: 6, overflow: 'hidden'
+              }}>
+                {clientesBsale.map(c => (
+                  <div key={c.id}
+                    onClick={async () => {
+                      setSeleccionandoBsale(true)
+                      try {
+                        const r = await upsertClienteBsale({
+                          bsale_id: c.id,
+                          nombre:   c.nombre,
+                          telefono: c.phone ?? null,
+                          email:    c.email ?? null
+                        })
+                        setClienteSeleccionado(r.data)
+                        setClientesBsale([])
+                      } catch {
+                        setError('Error al sincronizar cliente de Bsale')
+                      } finally {
+                        setSeleccionandoBsale(false)
+                      }
+                    }}
+                    style={{
+                      padding: '10px 12px', cursor: 'pointer', fontSize: 13,
+                      borderBottom: '1px solid var(--border-color)',
+                      background: 'var(--bg-card)'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-row-hover)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-card)'}
+                  >
+                    <div style={{ fontWeight: 700, color: 'var(--text-1)' }}>{c.nombre}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>
+                      {c.code && <span>RUT: {c.code}</span>}
+                      {c.phone && <span style={{ marginLeft: 8 }}>{c.phone}</span>}
+                      {c.email && <span style={{ marginLeft: 8, color: 'var(--link)' }}>{c.email}</span>}
                     </div>
-                  )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {seleccionandoBsale && (
+              <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 8 }}>Sincronizando cliente...</div>
+            )}
+
+            {clienteSeleccionado && (
+              <div style={{
+                background: 'var(--success-bg)', border: '1px solid #a8cc80',
+                borderRadius: 6, padding: '12px 14px', marginTop: 10
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 900, color: 'var(--success-text)',
+                  textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+                  ✓ Cliente seleccionado
                 </div>
-              </>
-            ) : (
-              <>
-                <div style={{ marginBottom: 14 }}>
-                  <label style={labelStyle}>Nombre *</label>
-                  <input value={nuevoCliente.nombre} onChange={e => setNuevoCliente(p => ({ ...p, nombre: e.target.value }))} style={inputStyle} autoFocus />
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-1)' }}>
+                  {clienteSeleccionado.nombre}
                 </div>
-                <div style={{ marginBottom: 14 }}>
-                  <label style={labelStyle}>Teléfono</label>
-                  <input value={nuevoCliente.telefono} onChange={e => setNuevoCliente(p => ({ ...p, telefono: e.target.value }))} style={inputStyle} />
-                </div>
-                <div style={{ marginBottom: 14 }}>
-                  <label style={labelStyle}>Email</label>
-                  <input value={nuevoCliente.email} onChange={e => setNuevoCliente(p => ({ ...p, email: e.target.value }))} style={inputStyle} />
-                </div>
-                <button onClick={() => setModoNuevoCliente(false)} style={{
-                  background: 'none', border: 'none', fontSize: 12, color: 'var(--text-3)', cursor: 'pointer', padding: 0
+                {clienteSeleccionado.telefono && (
+                  <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 2 }}>
+                    {clienteSeleccionado.telefono}
+                  </div>
+                )}
+                <button onClick={() => setClienteSeleccionado(null)} style={{
+                  marginTop: 8, background: 'none', border: 'none',
+                  fontSize: 11, color: 'var(--success-text)', cursor: 'pointer',
+                  padding: 0, textDecoration: 'underline'
                 }}>
-                  ← Buscar cliente existente
+                  Cambiar cliente
                 </button>
-              </>
+              </div>
             )}
 
             {error && <div style={{ color: 'var(--danger-text)', fontSize: 12, marginTop: 10 }}>{error}</div>}
@@ -496,11 +444,11 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
               <button
                 onClick={() => { setError(''); setStep(2) }}
-                disabled={!clienteSeleccionado && !modoNuevoCliente}
+                disabled={!clienteSeleccionado}
                 style={{
                   background: 'var(--primary)', border: 'none', borderRadius: 6,
                   padding: '9px 20px', fontWeight: 700, fontSize: 13, cursor: 'pointer',
-                  opacity: (!clienteSeleccionado && !modoNuevoCliente) ? 0.4 : 1
+                  opacity: !clienteSeleccionado ? 0.4 : 1
                 }}>
                 Siguiente →
               </button>
