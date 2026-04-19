@@ -43,6 +43,7 @@ export default function EquipoDetalle() {
   const [bsaleConfig, setBsaleConfig] = useState(null)
   const [docTypeId, setDocTypeId] = useState('')
   const [officeId, setOfficeId] = useState('')
+  const [priceListId, setPriceListId] = useState('')
 
   const cargar = useCallback(() => {
     setLoading(true)
@@ -74,6 +75,7 @@ export default function EquipoDetalle() {
         // Pre-seleccionar el primero disponible
         if (r.data.tipos?.length)   setDocTypeId(String(r.data.tipos[0].id))
         if (r.data.oficinas?.length) setOfficeId(String(r.data.oficinas[0].id))
+        if (r.data.listas?.length)  setPriceListId(String(r.data.listas[0].id))
       })
       .catch(() => {}) // no bloquear si BSale no responde
   }, [usuario])
@@ -129,8 +131,9 @@ export default function EquipoDetalle() {
         clienteBsaleId: equipo.cliente_bsale_id,
         monto: equipo.costo_reparacion,
         descripcion: `Reparación ${equipo.tipo_equipo} ${equipo.marca} ${equipo.modelo} - ${equipo.falla_reportada}`,
-        documentTypeId: docTypeId ? parseInt(docTypeId) : undefined,
-        officeId:       officeId  ? parseInt(officeId)  : undefined,
+        documentTypeId: docTypeId    ? parseInt(docTypeId)    : undefined,
+        officeId:       officeId     ? parseInt(officeId)     : undefined,
+        priceListId:    priceListId  ? parseInt(priceListId)  : undefined,
       })
       setDocGenerado(res.data)
       toast('Documento generado en Bsale')
@@ -496,6 +499,23 @@ export default function EquipoDetalle() {
                   ))}
                 </select>
               </div>
+              {bsaleConfig.listas?.length > 1 && (
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)',
+                    textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+                    Lista de precios
+                  </div>
+                  <select value={priceListId} onChange={e => setPriceListId(e.target.value)} style={{
+                    width: '100%', border: '1px solid var(--input-border)', borderRadius: 4,
+                    padding: '7px 9px', fontSize: 12, background: 'var(--input-bg)',
+                    color: 'var(--text-1)', outline: 'none'
+                  }}>
+                    {bsaleConfig.listas.map(l => (
+                      <option key={l.id} value={l.id}>{l.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           )}
 
