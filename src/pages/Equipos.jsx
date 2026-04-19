@@ -381,6 +381,21 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
               <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 8 }}>Buscando en Bsale...</div>
             )}
 
+            {/* Sin resultados — solo cuando hay búsqueda activa y BSale no devolvió nada */}
+            {!busquedaBsale && inputBusqueda.length >= 2 && clientesBsale.length === 0 && !clienteSeleccionado && (
+              <div style={{
+                border: '1px solid var(--border-color)', borderRadius: 6,
+                marginTop: 6, padding: '16px 14px', textAlign: 'center'
+              }}>
+                <div style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 4 }}>
+                  Sin resultados para <strong style={{ color: 'var(--text-2)' }}>"{inputBusqueda}"</strong>
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-3)' }}>
+                  Intenta buscar por nombre completo, empresa o RUT
+                </div>
+              </div>
+            )}
+
             {clientesBsale.length > 0 && !clienteSeleccionado && (
               <div style={{
                 border: '1px solid var(--border-color)', borderRadius: 6,
