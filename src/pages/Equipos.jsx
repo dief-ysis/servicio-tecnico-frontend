@@ -8,6 +8,7 @@ import { useToast } from '../components/Toast'
 import { exportarEquipos } from '../utils/exportExcel'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { buscarClientesBsale } from '../api/equipos'
+import { getClientesBsale } from '../api/clientes'
 
 const ESTADOS = ['por_reparar', 'en_reparacion', 'espera_repuesto', 'reparado', 'irreparable', 'entregado']
 const ESTADOS_LABELS = {
@@ -290,6 +291,14 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
   const [clientesBsale, setClientesBsale] = useState([])
   const [busquedaBsale, setBusquedaBsale] = useState(false)
   const [seleccionandoBsale, setSeleccionandoBsale] = useState(false)
+  const [inputBusqueda, setInputBusqueda] = useState('')
+
+  // Cargar primeros clientes al abrir el modal
+  useEffect(() => {
+    getClientesBsale({ limite: 8, offset: 0 })
+      .then(r => setClientesBsale(r.data.data ?? []))
+      .catch(() => {})
+  }, [])
 
   const handleSubmit = async () => {
     setError('')
@@ -341,11 +350,13 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
             <input
               placeholder="Nombre, empresa o RUT..."
               autoFocus
+              value={inputBusqueda}
               onChange={async (e) => {
                 const q = e.target.value
+                setInputBusqueda(q)
+                setClienteSeleccionado(null)
                 if (q.length >= 2) {
                   setBusquedaBsale(true)
-                  setClienteSeleccionado(null)
                   try {
                     const r = await buscarClientesBsale(q)
                     setClientesBsale(r.data)
@@ -354,6 +365,11 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
                   } finally {
                     setBusquedaBsale(false)
                   }
+                } else if (q.length === 0) {
+                  // Volver a mostrar los primeros clientes
+                  getClientesBsale({ limite: 8, offset: 0 })
+                    .then(r => setClientesBsale(r.data.data ?? []))
+                    .catch(() => setClientesBsale([]))
                 } else {
                   setClientesBsale([])
                 }
@@ -370,6 +386,14 @@ function ModalNuevoEquipo({ onClose, onCreado }) {
                 border: '1px solid var(--border-color)', borderRadius: 6,
                 marginTop: 6, overflow: 'hidden'
               }}>
+                <div style={{
+                  padding: '6px 12px', fontSize: 9, fontWeight: 900,
+                  color: 'var(--text-3)', textTransform: 'uppercase',
+                  letterSpacing: '0.1em', background: 'var(--bg-table-head)',
+                  borderBottom: '1px solid var(--border-color)'
+                }}>
+                  {inputBusqueda.length >= 2 ? `Resultados para "${inputBusqueda}"` : 'Clientes recientes de Bsale'}
+                </div>
                 {clientesBsale.map(c => (
                   <div key={c.id}
                     onClick={async () => {

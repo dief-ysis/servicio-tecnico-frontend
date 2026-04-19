@@ -166,31 +166,33 @@ export default function Clientes() {
         </div>
       )}
 
-      {/* Paginación */}
-      {paginas > 1 && (
+      {/* Paginación — solo cuando no hay búsqueda activa */}
+      {!buscar && paginas > 1 && (
         <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'center', alignItems: 'center' }}>
           <button
             disabled={offset === 0}
             onClick={() => setOffset(Math.max(0, offset - LIMITE))}
             style={{
-              background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-              borderRadius: 4, padding: '6px 14px', fontSize: 12,
-              cursor: offset === 0 ? 'default' : 'pointer',
-              opacity: offset === 0 ? 0.4 : 1
+              background: offset === 0 ? 'var(--bg-card)' : 'var(--primary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: 4, padding: '7px 16px', fontSize: 12, fontWeight: 700,
+              cursor: offset === 0 ? 'default' : 'pointer', color: '#000',
+              opacity: offset === 0 ? 0.35 : 1
             }}>
             ← Anterior
           </button>
-          <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
+          <span style={{ fontSize: 12, color: 'var(--text-2)', minWidth: 200, textAlign: 'center' }}>
             Página {pagina} de {paginas} · {total.toLocaleString('es-CL')} clientes
           </span>
           <button
             disabled={offset + LIMITE >= total}
             onClick={() => setOffset(offset + LIMITE)}
             style={{
-              background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-              borderRadius: 4, padding: '6px 14px', fontSize: 12,
-              cursor: offset + LIMITE >= total ? 'default' : 'pointer',
-              opacity: offset + LIMITE >= total ? 0.4 : 1
+              background: offset + LIMITE >= total ? 'var(--bg-card)' : 'var(--primary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: 4, padding: '7px 16px', fontSize: 12, fontWeight: 700,
+              cursor: offset + LIMITE >= total ? 'default' : 'pointer', color: '#000',
+              opacity: offset + LIMITE >= total ? 0.35 : 1
             }}>
             Siguiente →
           </button>
