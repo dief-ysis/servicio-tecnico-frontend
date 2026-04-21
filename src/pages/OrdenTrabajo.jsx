@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { QRCodeSVG } from 'qrcode.react'
 import { getEquipo, getHistorial } from '../api/equipos'
 
 export default function OrdenTrabajo() {
@@ -27,8 +28,13 @@ export default function OrdenTrabajo() {
 
   const estadoLabel = {
     por_reparar: 'Por reparar', en_reparacion: 'En reparación',
-    reparado: 'Reparado', irreparable: 'Irreparable', entregado: 'Entregado'
+    reparado: 'Reparado', irreparable: 'Irreparable', entregado: 'Entregado',
+    espera_repuesto: 'Espera repuesto'
   }
+
+  const seguimientoUrl = `${window.location.origin}/seguimiento?n=${encodeURIComponent(equipo.numero_ingreso)}`
+
+  const tienePresupuesto = equipo.presupuesto_monto && equipo.presupuesto_aprobado === true
 
   return (
     <>
@@ -64,6 +70,7 @@ export default function OrdenTrabajo() {
           margin: '0 auto', padding: '40px 48px',
         }}>
 
+          {/* ── Encabezado ─────────────────────────────────── */}
           <div style={{
             display: 'flex', justifyContent: 'space-between',
             alignItems: 'flex-start', marginBottom: 32,
@@ -79,19 +86,36 @@ export default function OrdenTrabajo() {
                 Servicio Técnico
               </div>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
-                Orden de trabajo
+
+            {/* QR + N° ingreso */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
+                  Orden de trabajo
+                </div>
+                <div style={{ fontFamily: 'monospace', fontSize: 18, fontWeight: 900, color: 'var(--black)' }}>
+                  {equipo.numero_ingreso}
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+                  {formatFecha(equipo.fecha_ingreso)}
+                </div>
               </div>
-              <div style={{ fontFamily: 'monospace', fontSize: 18, fontWeight: 900, color: 'var(--black)' }}>
-                {equipo.numero_ingreso}
-              </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-                {formatFecha(equipo.fecha_ingreso)}
+              <div style={{ textAlign: 'center' }}>
+                <QRCodeSVG
+                  value={seguimientoUrl}
+                  size={72}
+                  fgColor="#000"
+                  bgColor="#fff"
+                  level="M"
+                />
+                <div style={{ fontSize: 8, color: 'var(--text-muted)', marginTop: 4, letterSpacing: '0.04em' }}>
+                  SEGUIMIENTO
+                </div>
               </div>
             </div>
           </div>
 
+          {/* ── Datos cliente / equipo ───────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 28 }}>
             <div>
               <div style={{
@@ -134,6 +158,7 @@ export default function OrdenTrabajo() {
             </div>
           </Section>
 
+          {/* ── Estado + Costo ───────────────────────────── */}
           <div style={{
             display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 28
           }}>
@@ -154,8 +179,39 @@ export default function OrdenTrabajo() {
             </Section>
           </div>
 
+          {/* ── Presupuesto aprobado ─────────────────────── */}
+          {tienePresupuesto && (
+            <Section title="Presupuesto aprobado por el cliente">
+              <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: 20, fontWeight: 900, color: 'var(--black)' }}>
+                    ${Number(equipo.presupuesto_monto).toLocaleString('es-CL')}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                    Aprobado el {formatFecha(equipo.presupuesto_aprobado_en)}
+                  </div>
+                </div>
+                {equipo.presupuesto_notas && (
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic', flex: 1 }}>
+                    "{equipo.presupuesto_notas}"
+                  </div>
+                )}
+              </div>
+            </Section>
+          )}
+
+          {/* ── Garantía ─────────────────────────────────── */}
+          {equipo.garantia_hasta && (
+            <Section title="Garantía de reparación">
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--black)' }}>
+                Válida hasta: {formatFecha(equipo.garantia_hasta)}
+              </div>
+            </Section>
+          )}
+
+          {/* ── Historial ────────────────────────────────── */}
           {historial.length > 0 && (
-            <Section titulo="Historial de estados">
+            <Section title="Historial de estados">
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
@@ -190,11 +246,36 @@ export default function OrdenTrabajo() {
             </Section>
           )}
 
+          {/* ── Firmas ───────────────────────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, marginTop: 48 }}>
+            {/* Firma técnico: siempre manual */}
             <Firma label="Firma técnico" />
-            <Firma label="Firma cliente / Conforme" />
+
+            {/* Firma cliente: digital si existe, manual si no */}
+            {equipo.firma_url ? (
+              <div>
+                <div style={{ marginBottom: 8, height: 72, display: 'flex', alignItems: 'flex-end' }}>
+                  <img
+                    src={equipo.firma_url}
+                    alt="Firma digital del cliente"
+                    style={{ maxHeight: 64, maxWidth: '100%', objectFit: 'contain' }}
+                  />
+                </div>
+                <div style={{ borderTop: '1.5px solid var(--black)', paddingTop: 6 }}>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    Firma cliente / Conforme
+                  </div>
+                  <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>
+                    Firma digital registrada
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Firma label="Firma cliente / Conforme" />
+            )}
           </div>
 
+          {/* ── Pie de página ────────────────────────────── */}
           <div style={{
             marginTop: 36, paddingTop: 16, borderTop: '1px solid var(--border)',
             fontSize: 9, color: 'var(--text-muted)', textAlign: 'center', letterSpacing: '0.06em'

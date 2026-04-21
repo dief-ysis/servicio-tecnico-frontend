@@ -4,6 +4,7 @@ import {
   LineChart, Line, CartesianGrid, Cell
 } from 'recharts'
 import { getEstadisticas } from '../api/equipos'
+import { getUsuarios } from '../api/auth'
 import { pageTitle } from '../components/UI'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
@@ -30,15 +31,22 @@ const ESTADO_COLORS = {
 
 export default function Estadisticas() {
   const [periodo, setPeriodo] = useState('mes')
+  const [usuarioId, setUsuarioId] = useState('')
+  const [usuarios, setUsuarios] = useState([])
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  // Cargar lista de técnicos una sola vez
+  useEffect(() => {
+    getUsuarios().then(r => setUsuarios(r.data)).catch(() => {})
+  }, [])
+
   useEffect(() => {
     setLoading(true)
-    getEstadisticas(periodo)
+    getEstadisticas(periodo, usuarioId || undefined)
       .then(r => setData(r.data))
       .finally(() => setLoading(false))
-  }, [periodo])
+  }, [periodo, usuarioId])
 
   const totalEquipos = data?.totales.reduce((acc, t) => acc + parseInt(t.total), 0) ?? 0
   const totalFacturado = parseFloat(data?.costos?.total_facturado ?? 0)
@@ -56,10 +64,18 @@ export default function Estadisticas() {
 
   const exportarPDF = () => {
     const doc = new jsPDF()
+    const tecnicoNombre = usuarioId
+      ? usuarios.find(u => String(u.id) === String(usuarioId))?.nombre ?? 'Técnico'
+      : null
     doc.setFontSize(16)
     doc.text('Light Solution — Estadísticas', 14, 20)
     doc.setFontSize(10)
-    doc.text(`Período: ${PERIODOS.find(p => p.key === periodo)?.label} · ${new Date().toLocaleDateString('es-CL')}`, 14, 30)
+    const subtitulo = [
+      `Período: ${PERIODOS.find(p => p.key === periodo)?.label}`,
+      tecnicoNombre ? `Técnico: ${tecnicoNombre}` : null,
+      new Date().toLocaleDateString('es-CL')
+    ].filter(Boolean).join(' · ')
+    doc.text(subtitulo, 14, 30)
     doc.autoTable({
       startY: 38,
       head: [['Estado', 'Total']],
@@ -84,9 +100,10 @@ export default function Estadisticas() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 10 }}>
         <h1 style={pageTitle}>Estadísticas</h1>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+          {/* Filtro por período */}
           {PERIODOS.map(p => (
             <button key={p.key} onClick={() => setPeriodo(p.key)} style={{
               background: periodo === p.key ? 'var(--primary)' : 'var(--white)',
@@ -98,6 +115,27 @@ export default function Estadisticas() {
               {p.label.toUpperCase()}
             </button>
           ))}
+
+          {/* Filtro por técnico */}
+          {usuarios.length > 0 && (
+            <select
+              value={usuarioId}
+              onChange={e => setUsuarioId(e.target.value)}
+              style={{
+                border: '1px solid var(--input-border)', borderRadius: 4,
+                padding: '7px 10px', fontSize: 11, fontWeight: 700,
+                background: usuarioId ? 'var(--primary)' : 'var(--white)',
+                color: usuarioId ? 'var(--black)' : 'var(--text-secondary)',
+                cursor: 'pointer', appearance: 'none', paddingRight: 24
+              }}
+            >
+              <option value="">TODOS LOS TÉCNICOS</option>
+              {usuarios.map(u => (
+                <option key={u.id} value={u.id}>{u.nombre.toUpperCase()}</option>
+              ))}
+            </select>
+          )}
+
           <button
             onClick={exportarPDF}
             disabled={loading || !data}

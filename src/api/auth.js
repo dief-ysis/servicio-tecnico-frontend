@@ -8,3 +8,6 @@ export const getMe = () =>
 
 export const logoutApi = () =>
   client.post('/auth/logout')
+
+export const getUsuarios = () =>
+  client.get('/usuarios')
