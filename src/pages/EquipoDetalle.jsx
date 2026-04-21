@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getEquipo, cambiarEstado, getHistorial, actualizarEquipo, subirFoto } from '../api/equipos'
+import { getEquipo, cambiarEstado, getHistorial, actualizarEquipo, subirFoto, getFotos, eliminarFoto } from '../api/equipos'
 import EstadoBadge from '../components/EstadoBadge'
 import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../components/Toast'
@@ -37,6 +37,9 @@ export default function EquipoDetalle() {
   const [form, setForm] = useState({})
   const [guardando, setGuardando] = useState(false)
   const [estadoPendiente, setEstadoPendiente] = useState(null)
+  const [fotos, setFotos] = useState([])
+  const [etiquetaFoto, setEtiquetaFoto] = useState('general')
+  const [fotoAmpliada, setFotoAmpliada] = useState(null)
   const [subiendo, setSubiendo] = useState(false)
   const [generandoDoc, setGenerandoDoc] = useState(false)
   const [docGenerado, setDocGenerado] = useState(null)
@@ -47,8 +50,8 @@ export default function EquipoDetalle() {
 
   const cargar = useCallback(() => {
     setLoading(true)
-    Promise.all([getEquipo(id), getHistorial(id)])
-      .then(([eq, hist]) => {
+    Promise.all([getEquipo(id), getHistorial(id), getFotos(id)])
+      .then(([eq, hist, fots]) => {
         setEquipo(eq.data)
         setForm({
           diagnostico: eq.data.diagnostico ?? '',
@@ -59,6 +62,7 @@ export default function EquipoDetalle() {
           garantia_dias:    eq.data.garantia_dias ?? '',
         })
         setHistorial(hist.data)
+        setFotos(fots.data)
       })
       .catch(() => toast('Error al cargar el equipo', 'error'))
       .finally(() => setLoading(false))
@@ -109,13 +113,25 @@ export default function EquipoDetalle() {
     if (!file) return
     setSubiendo(true)
     try {
-      await subirFoto(id, file)
+      await subirFoto(id, file, etiquetaFoto)
       toast('Foto subida correctamente')
       cargar()
     } catch {
       toast('Error al subir la foto', 'error')
     } finally {
       setSubiendo(false)
+      e.target.value = ''
+    }
+  }
+
+  const handleEliminarFoto = async (fotoId) => {
+    if (!window.confirm('¿Eliminar esta foto?')) return
+    try {
+      await eliminarFoto(id, fotoId)
+      toast('Foto eliminada')
+      cargar()
+    } catch {
+      toast('Error al eliminar la foto', 'error')
     }
   }
 
@@ -374,7 +390,7 @@ export default function EquipoDetalle() {
         </div>
       </div>
 
-      {/* Foto — visible para todos, upload solo técnico */}
+      {/* Fotos — galería múltiple */}
       <div style={{
         background: 'var(--bg-card)', border: '1px solid var(--border-color)',
         borderRadius: 8, padding: '18px 20px', marginBottom: 12
@@ -382,43 +398,104 @@ export default function EquipoDetalle() {
         <div style={{
           fontSize: 9, fontWeight: 900, textTransform: 'uppercase',
           letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: 14
-        }}>Foto del equipo</div>
-        {equipo.foto_url ? (
-          <div>
-            <img src={equipo.foto_url} alt="Foto del equipo"
-              style={{
-                width: '100%', maxWidth: 400, borderRadius: 6,
-                border: '1px solid var(--border-color)', cursor: 'pointer',
-                display: 'block'
-              }}
-              onClick={() => window.open(equipo.foto_url, '_blank')}
-            />
-            {/* URL de Cloudinary solo para técnico */}
-            {usuario.rol === 'tecnico' && (
-              <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-3)',
-                wordBreak: 'break-all', fontFamily: 'monospace' }}>
-                {equipo.foto_url}
+        }}>Fotos del equipo</div>
+
+        {/* Galería de thumbnails */}
+        {fotos.length > 0 ? (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+            {fotos.map(foto => (
+              <div key={foto.id} style={{ position: 'relative' }}>
+                <img
+                  src={foto.url}
+                  alt={foto.etiqueta}
+                  title={foto.etiqueta}
+                  style={{
+                    height: 120, width: 'auto', borderRadius: 6,
+                    border: '1px solid var(--border-color)', cursor: 'pointer',
+                    objectFit: 'cover', display: 'block'
+                  }}
+                  onClick={() => setFotoAmpliada(foto)}
+                />
+                <div style={{
+                  position: 'absolute', bottom: 4, left: 4,
+                  background: 'rgba(0,0,0,0.65)', color: '#fff',
+                  fontSize: 9, fontWeight: 700, padding: '2px 5px',
+                  borderRadius: 3, textTransform: 'uppercase', letterSpacing: '0.06em'
+                }}>{foto.etiqueta}</div>
+                {usuario.rol === 'tecnico' && (
+                  <button
+                    onClick={() => handleEliminarFoto(foto.id)}
+                    title="Eliminar foto"
+                    style={{
+                      position: 'absolute', top: 4, right: 4,
+                      background: 'rgba(180,0,0,0.8)', color: '#fff',
+                      border: 'none', borderRadius: 3, width: 20, height: 20,
+                      fontSize: 12, cursor: 'pointer', lineHeight: 1,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}
+                  >×</button>
+                )}
               </div>
-            )}
+            ))}
           </div>
-        ) : usuario.rol === 'tecnico' ? (
-          <label style={{ cursor: 'pointer', display: 'block' }}>
-            <div style={{
-              border: '2px dashed var(--border-color)', borderRadius: 6,
-              padding: '24px', textAlign: 'center',
-              color: 'var(--text-3)', fontSize: 12, fontWeight: 600,
-              letterSpacing: '0.04em'
-            }}>
-              {subiendo ? 'Subiendo...' : '+ Agregar foto del equipo'}
-            </div>
-            <input type="file" accept="image/*" capture="environment"
-              onChange={handleFoto} style={{ display: 'none' }}
-              disabled={subiendo} />
-          </label>
         ) : (
-          <div style={{ color: 'var(--text-3)', fontSize: 13 }}>Sin foto</div>
+          <div style={{ color: 'var(--text-3)', fontSize: 13, marginBottom: fotos.length === 0 && usuario.rol !== 'tecnico' ? 0 : 16 }}>
+            Sin fotos
+          </div>
+        )}
+
+        {/* Upload — solo técnico */}
+        {usuario.rol === 'tecnico' && (
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+            <select
+              value={etiquetaFoto}
+              onChange={e => setEtiquetaFoto(e.target.value)}
+              style={{
+                border: '1px solid var(--input-border)', borderRadius: 4,
+                padding: '7px 9px', fontSize: 12, background: 'var(--input-bg)',
+                color: 'var(--text-1)', outline: 'none'
+              }}
+            >
+              <option value="general">General</option>
+              <option value="recepcion">Recepción</option>
+              <option value="reparacion">Reparación</option>
+              <option value="entrega">Entrega</option>
+            </select>
+            <label style={{ cursor: subiendo ? 'not-allowed' : 'pointer' }}>
+              <div style={{
+                border: '1px dashed var(--border-color)', borderRadius: 6,
+                padding: '7px 16px', textAlign: 'center',
+                color: 'var(--text-3)', fontSize: 12, fontWeight: 600,
+                letterSpacing: '0.04em', background: 'var(--bg-main)',
+                opacity: subiendo ? 0.6 : 1
+              }}>
+                {subiendo ? 'Subiendo...' : '+ Subir foto'}
+              </div>
+              <input type="file" accept="image/*" capture="environment"
+                onChange={handleFoto} style={{ display: 'none' }}
+                disabled={subiendo} />
+            </label>
+          </div>
         )}
       </div>
+
+      {/* Modal foto ampliada */}
+      {fotoAmpliada && (
+        <div
+          onClick={() => setFotoAmpliada(null)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 999, padding: 20, cursor: 'zoom-out'
+          }}
+        >
+          <img
+            src={fotoAmpliada.url}
+            alt={fotoAmpliada.etiqueta}
+            style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: 8, objectFit: 'contain' }}
+          />
+        </div>
+      )}
 
         {usuario.rol === 'tecnico' &&
     equipo.costo_reparacion > 0 &&

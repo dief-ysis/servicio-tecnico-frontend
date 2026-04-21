@@ -11,10 +11,12 @@ export const getSinMovimiento = (dias = 7) => client.get('/equipos/sin-movimient
 export const buscarClientesBsale = (q) => client.get('/bsale/clientes', { params: { q } })
 export const generarDocumentoBsale = (data) => client.post('/bsale/documento', data)
 export const getBsaleConfig = () => client.get('/bsale/config')
-export const subirFoto = (id, file) => {
+export const subirFoto = (id, file, etiqueta = 'general') => {
   const formData = new FormData()
   formData.append('foto', file)
-  return client.post(`/equipos/${id}/foto`, formData, {
+  return client.post(`/equipos/${id}/foto?etiqueta=${etiqueta}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   })
 }
+export const getFotos = (id) => client.get(`/equipos/${id}/fotos`)
+export const eliminarFoto = (id, fotoId) => client.delete(`/equipos/${id}/fotos/${fotoId}`)

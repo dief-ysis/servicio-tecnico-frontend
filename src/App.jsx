@@ -13,6 +13,7 @@ import OrdenTrabajo from './pages/OrdenTrabajo'
 import NotFound from './pages/NotFound'
 import Privacidad from './pages/Privacidad'
 import Estadisticas from './pages/Estadisticas'
+import Seguimiento from './pages/Seguimiento'
 
 function PrivateRoute({ children }) {
   const { usuario } = useAuth()
@@ -24,6 +25,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/privacidad" element={<Privacidad />} />
+      <Route path="/seguimiento" element={<Seguimiento />} />
       <Route path="/" element={
         <PrivateRoute><Layout><Dashboard /></Layout></PrivateRoute>
       }/>
