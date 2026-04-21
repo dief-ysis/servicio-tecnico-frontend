@@ -5,6 +5,8 @@ import {
 } from 'recharts'
 import { getEstadisticas } from '../api/equipos'
 import { pageTitle } from '../components/UI'
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
 
 const PERIODOS = [
   { key: 'semana', label: 'Última semana' },
@@ -52,6 +54,34 @@ export default function Estadisticas() {
     ingresos: parseInt(d.ingresos)
   })) ?? []
 
+  const exportarPDF = () => {
+    const doc = new jsPDF()
+    doc.setFontSize(16)
+    doc.text('Light Solution — Estadísticas', 14, 20)
+    doc.setFontSize(10)
+    doc.text(`Período: ${PERIODOS.find(p => p.key === periodo)?.label} · ${new Date().toLocaleDateString('es-CL')}`, 14, 30)
+    doc.autoTable({
+      startY: 38,
+      head: [['Estado', 'Total']],
+      body: barData.map(d => [d.estado, d.total])
+    })
+    doc.autoTable({
+      startY: doc.lastAutoTable.finalY + 10,
+      head: [['Métrica', 'Valor']],
+      body: [
+        ['Total facturado', `$${totalFacturado.toLocaleString('es-CL')}`],
+        ['Costo promedio', `$${promedio.toLocaleString('es-CL')}`],
+        ['Total equipos', totalEquipos]
+      ]
+    })
+    doc.autoTable({
+      startY: doc.lastAutoTable.finalY + 10,
+      head: [['Fecha', 'Ingresos']],
+      body: lineData.map(d => [d.fecha, d.ingresos])
+    })
+    doc.save(`estadisticas-${periodo}-${new Date().toISOString().slice(0, 10)}.pdf`)
+  }
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
@@ -68,6 +98,18 @@ export default function Estadisticas() {
               {p.label.toUpperCase()}
             </button>
           ))}
+          <button
+            onClick={exportarPDF}
+            disabled={loading || !data}
+            style={{
+              background: '#000', color: '#ffcd0d', border: 'none',
+              borderRadius: 4, padding: '7px 14px', fontSize: 11,
+              fontWeight: 800, letterSpacing: '0.06em', cursor: loading || !data ? 'not-allowed' : 'pointer',
+              opacity: loading || !data ? 0.5 : 1
+            }}
+          >
+            EXPORTAR PDF
+          </button>
         </div>
       </div>
 

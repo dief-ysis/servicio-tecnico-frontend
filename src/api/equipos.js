@@ -20,3 +20,6 @@ export const subirFoto = (id, file, etiqueta = 'general') => {
 }
 export const getFotos = (id) => client.get(`/equipos/${id}/fotos`)
 export const eliminarFoto = (id, fotoId) => client.delete(`/equipos/${id}/fotos/${fotoId}`)
+export const enviarPresupuesto = (id, data) => client.post(`/equipos/${id}/presupuesto`, data)
+export const responderPresupuesto = (id, data) => client.patch(`/equipos/${id}/presupuesto`, data)
+export const guardarFirma = (id, firma_base64) => client.post(`/equipos/${id}/firma`, { firma_base64 })

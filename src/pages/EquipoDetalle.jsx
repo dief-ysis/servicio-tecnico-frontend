@@ -1,11 +1,12 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getEquipo, cambiarEstado, getHistorial, actualizarEquipo, subirFoto, getFotos, eliminarFoto } from '../api/equipos'
+import { getEquipo, cambiarEstado, getHistorial, actualizarEquipo, subirFoto, getFotos, eliminarFoto, enviarPresupuesto, responderPresupuesto, guardarFirma } from '../api/equipos'
 import EstadoBadge from '../components/EstadoBadge'
 import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../components/Toast'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { generarDocumentoBsale, getBsaleConfig } from '../api/equipos'
+import SignatureCanvas from 'react-signature-canvas'
 
 const inputStyle = {
   width: '100%', border: '1px solid var(--input-border)', borderRadius: 4,
@@ -47,6 +48,12 @@ export default function EquipoDetalle() {
   const [docTypeId, setDocTypeId] = useState('')
   const [officeId, setOfficeId] = useState('')
   const [priceListId, setPriceListId] = useState('')
+  const [presupuestoMonto, setPresupuestoMonto] = useState('')
+  const [presupuestoNotas, setPresupuestoNotas] = useState('')
+  const [enviandoPres, setEnviandoPres] = useState(false)
+  const [firmaAbierta, setFirmaAbierta] = useState(false)
+  const [guardandoFirma, setGuardandoFirma] = useState(false)
+  const sigRef = useRef(null)
 
   const cargar = useCallback(() => {
     setLoading(true)
@@ -389,6 +396,245 @@ export default function EquipoDetalle() {
           </div>
         </div>
       </div>
+
+      {/* Presupuesto formal — solo técnico, estados por_reparar o en_reparacion */}
+      {usuario.rol === 'tecnico' && ['por_reparar', 'en_reparacion'].includes(equipo.estado_actual) && (
+        <div style={{
+          background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+          borderLeft: '4px solid #185fa5',
+          borderRadius: 8, padding: '18px 20px', marginBottom: 12
+        }}>
+          <div style={{
+            fontSize: 9, fontWeight: 900, textTransform: 'uppercase',
+            letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: 14
+          }}>Presupuesto</div>
+
+          {/* Estado 4: rechazado */}
+          {equipo.presupuesto_aprobado === false && (
+            <div style={{
+              background: 'var(--danger-bg)', border: '1px solid #e8a0a0',
+              borderRadius: 6, padding: '10px 14px', fontSize: 13,
+              fontWeight: 700, color: 'var(--danger-text)'
+            }}>
+              Presupuesto rechazado
+            </div>
+          )}
+
+          {/* Estado 3: aprobado */}
+          {equipo.presupuesto_aprobado === true && (
+            <div style={{
+              background: 'var(--success-bg)', border: '1px solid #a8cc80',
+              borderRadius: 6, padding: '10px 14px', fontSize: 13,
+              fontWeight: 700, color: 'var(--success-text)'
+            }}>
+              Presupuesto aprobado
+            </div>
+          )}
+
+          {/* Estado 2: enviado, esperando respuesta */}
+          {equipo.presupuesto_enviado_en && equipo.presupuesto_aprobado === null && (
+            <div>
+              <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 12 }}>
+                Presupuesto enviado el {new Date(equipo.presupuesto_enviado_en).toLocaleDateString('es-CL')} por{' '}
+                <strong style={{ color: 'var(--text-1)' }}>${Number(equipo.presupuesto_monto).toLocaleString('es-CL')}</strong>.{' '}
+                En espera de respuesta.
+              </div>
+              {equipo.presupuesto_notas && (
+                <div style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 12 }}>
+                  Notas: {equipo.presupuesto_notas}
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={async () => {
+                    try {
+                      await responderPresupuesto(id, { aprobado: true })
+                      toast('Presupuesto aprobado registrado')
+                      cargar()
+                    } catch { toast('Error al registrar respuesta', 'error') }
+                  }}
+                  style={{
+                    background: 'var(--success-bg)', border: '1px solid #a8cc80',
+                    borderRadius: 4, padding: '8px 14px', fontSize: 11,
+                    fontWeight: 800, cursor: 'pointer', color: 'var(--success-text)',
+                    letterSpacing: '0.04em'
+                  }}
+                >
+                  Registrar aprobacion
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      await responderPresupuesto(id, { aprobado: false })
+                      toast('Presupuesto rechazado registrado')
+                      cargar()
+                    } catch { toast('Error al registrar respuesta', 'error') }
+                  }}
+                  style={{
+                    background: 'var(--danger-bg)', border: '1px solid #e8a0a0',
+                    borderRadius: 4, padding: '8px 14px', fontSize: 11,
+                    fontWeight: 800, cursor: 'pointer', color: 'var(--danger-text)',
+                    letterSpacing: '0.04em'
+                  }}
+                >
+                  Registrar rechazo
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Estado 1: no enviado aún */}
+          {!equipo.presupuesto_enviado_en && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 13, color: 'var(--text-2)', fontWeight: 700 }}>$</span>
+                <input
+                  type="number" min="1" step="1"
+                  value={presupuestoMonto}
+                  onChange={e => setPresupuestoMonto(e.target.value)}
+                  placeholder="Monto del presupuesto"
+                  style={{ ...inputStyle, maxWidth: 200, resize: 'none' }}
+                />
+              </div>
+              <textarea
+                value={presupuestoNotas}
+                onChange={e => setPresupuestoNotas(e.target.value)}
+                placeholder="Notas del presupuesto (opcional)"
+                rows={2}
+                style={inputStyle}
+              />
+              <div>
+                <button
+                  disabled={enviandoPres}
+                  onClick={async () => {
+                    if (!presupuestoMonto || Number(presupuestoMonto) <= 0) {
+                      toast('Ingresa un monto válido', 'error')
+                      return
+                    }
+                    setEnviandoPres(true)
+                    try {
+                      await enviarPresupuesto(id, { monto: Number(presupuestoMonto), notas: presupuestoNotas || undefined })
+                      toast('Presupuesto enviado')
+                      setPresupuestoMonto('')
+                      setPresupuestoNotas('')
+                      cargar()
+                    } catch { toast('Error al enviar presupuesto', 'error') }
+                    finally { setEnviandoPres(false) }
+                  }}
+                  style={{
+                    background: '#185fa5', color: '#fff', border: 'none',
+                    borderRadius: 4, padding: '8px 16px', fontSize: 11,
+                    fontWeight: 900, letterSpacing: '0.06em',
+                    textTransform: 'uppercase', cursor: enviandoPres ? 'not-allowed' : 'pointer',
+                    opacity: enviandoPres ? 0.6 : 1
+                  }}
+                >
+                  {enviandoPres ? 'Enviando...' : 'Enviar presupuesto'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Firma digital — tecnico o recepcionista, solo estado por_reparar */}
+      {(usuario.rol === 'tecnico' || usuario.rol === 'recepcionista') && equipo.estado_actual === 'por_reparar' && (
+        <div style={{
+          background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+          borderRadius: 8, padding: '18px 20px', marginBottom: 12
+        }}>
+          <div style={{
+            fontSize: 9, fontWeight: 900, textTransform: 'uppercase',
+            letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: 14
+          }}>Firma digital</div>
+
+          {equipo.firma_url ? (
+            <div>
+              <img src={equipo.firma_url} alt="Firma digital" style={{
+                maxWidth: '100%', border: '1px solid var(--border-color)',
+                borderRadius: 6, display: 'block', marginBottom: 8
+              }} />
+              <div style={{ fontSize: 11, color: 'var(--success-text)', fontWeight: 700 }}>
+                Firmado
+              </div>
+            </div>
+          ) : firmaAbierta ? (
+            <div>
+              <SignatureCanvas
+                ref={sigRef}
+                canvasProps={{
+                  style: {
+                    width: '100%', height: 160,
+                    background: '#fff', border: '1px solid var(--border-color)',
+                    borderRadius: 6, display: 'block'
+                  }
+                }}
+                backgroundColor="white"
+              />
+              <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                <button
+                  onClick={() => sigRef.current?.clear()}
+                  style={{
+                    background: 'none', border: '1px solid var(--border-color)',
+                    borderRadius: 4, padding: '7px 14px', fontSize: 11,
+                    fontWeight: 700, cursor: 'pointer', color: 'var(--text-2)'
+                  }}
+                >
+                  Limpiar
+                </button>
+                <button
+                  disabled={guardandoFirma}
+                  onClick={async () => {
+                    if (!sigRef.current || sigRef.current.isEmpty()) {
+                      toast('Dibuja una firma primero', 'error')
+                      return
+                    }
+                    setGuardandoFirma(true)
+                    try {
+                      const base64 = sigRef.current.toDataURL()
+                      await guardarFirma(id, base64)
+                      toast('Firma guardada')
+                      setFirmaAbierta(false)
+                      cargar()
+                    } catch { toast('Error al guardar firma', 'error') }
+                    finally { setGuardandoFirma(false) }
+                  }}
+                  style={{
+                    background: '#000', color: '#ffcd0d', border: 'none',
+                    borderRadius: 4, padding: '7px 16px', fontSize: 11,
+                    fontWeight: 900, letterSpacing: '0.06em',
+                    textTransform: 'uppercase', cursor: guardandoFirma ? 'not-allowed' : 'pointer',
+                    opacity: guardandoFirma ? 0.6 : 1
+                  }}
+                >
+                  {guardandoFirma ? 'Guardando...' : 'Guardar firma'}
+                </button>
+                <button
+                  onClick={() => setFirmaAbierta(false)}
+                  style={{
+                    background: 'none', border: '1px solid var(--border-color)',
+                    borderRadius: 4, padding: '7px 14px', fontSize: 11,
+                    fontWeight: 700, cursor: 'pointer', color: 'var(--text-2)'
+                  }}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setFirmaAbierta(true)}
+              style={{
+                background: 'none', border: '1px dashed var(--border-color)',
+                borderRadius: 6, padding: '10px 18px', fontSize: 12,
+                fontWeight: 700, cursor: 'pointer', color: 'var(--text-2)'
+              }}
+            >
+              Capturar firma
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Fotos — galería múltiple */}
       <div style={{
