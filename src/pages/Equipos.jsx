@@ -62,6 +62,7 @@ export default function Equipos() {
     if (buscar) params.buscar = buscar
     if (fechaDesde) params.fecha_desde = fechaDesde
     if (fechaHasta) params.fecha_hasta = fechaHasta
+    window.scrollTo({ top: 0, behavior: 'smooth' })
     setLoading(true)
     try {
       const r = await getEquipos(params)
